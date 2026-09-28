@@ -175,6 +175,8 @@ DEFAULT_CONTROLS: List[Tuple[str, str]] = [
     ("M2", "M2 back button (wait to skip if absent)"),
     ("M3", "M3 back button (wait to skip if absent)"),
     ("M4", "M4 back button (wait to skip if absent)"),
+    ("M5", "M5 back button (wait to skip if absent)"),
+    ("M6", "M6 back button (wait to skip if absent)"),
     ("Extra1", "Any other button (e.g. mode/menu/mute), or wait to skip"),
     ("Extra2", "Any other button, or wait to skip"),
 ]

@@ -51,6 +51,8 @@ Field keys are `I<report id>@<bit offset>+<bit size>`, as printed by the tool.
 | M2 | | | | | |
 | M3 | | | | | |
 | M4 | | | | | |
+| M5 | | | | | |
+| M6 | | | | | |
 
 ## Observations
 

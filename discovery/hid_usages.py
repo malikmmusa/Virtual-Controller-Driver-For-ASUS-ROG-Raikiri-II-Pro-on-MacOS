@@ -72,10 +72,21 @@ _CONSUMER = {
     0x224: "AC Back",
 }
 
+# Physical Input Device page: force feedback / rumble (HID PID 1.0 spec).
+_PID = {
+    0x21: "Set Effect Report",
+    0x50: "Duration",
+    0x70: "Magnitude",
+    0x7C: "Loop Count",
+    0x97: "DC Enable Actuators",
+    0xA7: "Start Delay",
+}
+
 _PAGES = {
     0x01: _GENERIC_DESKTOP,
     0x02: _SIMULATION,
     0x0C: _CONSUMER,
+    0x0F: _PID,
 }
 
 COLLECTION_TYPES = {
@@ -106,3 +117,34 @@ def usage_name(page: int, usage: int) -> str:
     if usage in table:
         return table[usage]
     return f"{page_name(page)}:0x{usage:02X}"
+
+
+_UNIT_SYSTEMS = {1: "SI Linear", 2: "SI Rotation", 3: "English Linear", 4: "English Rotation"}
+# Base unit per (nibble index, system). Nibble 1 is length (or angle for
+# rotation systems), 2 mass, 3 time, 4 temperature, 5 current, 6 luminous.
+_UNIT_BASES = {
+    1: {1: "cm", 2: "rad", 3: "in", 4: "deg"},
+    2: {1: "g", 2: "g", 3: "slug", 4: "slug"},
+    3: {s: "s" for s in range(1, 5)},
+    4: {1: "K", 2: "K", 3: "F", 4: "F"},
+    5: {s: "A" for s in range(1, 5)},
+    6: {s: "cd" for s in range(1, 5)},
+}
+
+
+def nibble_signed(n: int) -> int:
+    return n - 16 if n > 7 else n
+
+
+def unit_name(unit: int) -> str:
+    """Decode a HID Unit item, e.g. 0x14 -> 'English Rotation: deg'."""
+    if unit == 0:
+        return "none"
+    system = unit & 0xF
+    parts = []
+    for i in range(1, 7):
+        exp = nibble_signed((unit >> (4 * i)) & 0xF)
+        if exp:
+            base = _UNIT_BASES[i].get(system, "?")
+            parts.append(base if exp == 1 else f"{base}^{exp}")
+    return f"{_UNIT_SYSTEMS.get(system, f'system {system}')}: {'*'.join(parts) or '-'}"

@@ -27,7 +27,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field, replace
 from typing import Dict, List, Optional, Tuple
 
-from hid_usages import COLLECTION_TYPES, page_name, usage_name
+from hid_usages import COLLECTION_TYPES, nibble_signed, page_name, unit_name, usage_name
 
 TYPE_MAIN, TYPE_GLOBAL, TYPE_LOCAL = 0, 1, 2
 
@@ -453,7 +453,13 @@ def format_items(items: List[Item]) -> str:
             value = main_flags_str(it.udata)
         elif it.type == TYPE_MAIN and it.tag == 0xA:
             value = COLLECTION_TYPES.get(it.udata, f"0x{it.udata:02X}")
-        elif it.type == TYPE_GLOBAL and it.tag in (0x1, 0x2, 0x3, 0x4, 0x5):
+        elif it.type == TYPE_GLOBAL and it.tag == 0x5:
+            # The spec's examples encode the exponent as a 4-bit signed nibble:
+            # 0x0E means -2 (units of 10^-2), not 14.
+            value = str(nibble_signed(it.udata)) if it.udata <= 0xF else str(it.sdata)
+        elif it.type == TYPE_GLOBAL and it.tag == 0x6:
+            value = f"0x{it.udata:X} = {unit_name(it.udata)}"
+        elif it.type == TYPE_GLOBAL and it.tag in (0x1, 0x2, 0x3, 0x4):
             value = f"{it.sdata}" + (f" / {it.udata}" if it.sdata != it.udata else "")
         elif it.type == TYPE_GLOBAL and it.tag in (0x7, 0x8, 0x9):
             value = str(it.udata)

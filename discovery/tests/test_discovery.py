@@ -173,6 +173,51 @@ class MappingTests(unittest.TestCase):
         self.assertEqual(rec.feed(rest, 0.8), "released")
 
 
+CAPTURE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "docs", "captures",
+                       "raikiri-bt-descriptor.hex")
+
+
+class RealDescriptorTests(unittest.TestCase):
+    """The descriptor captured from the Raikiri II Pro over Bluetooth on macOS."""
+
+    def setUp(self):
+        self.raw = raikiri_probe.load_descriptor_file(CAPTURE)
+        self.d = parse_descriptor(self.raw)
+        self.f = {f.name: f for f in self.d.input_fields()}
+
+    def test_loads_with_comment_line(self):
+        self.assertEqual(len(self.raw), 283)
+        self.assertEqual(self.d.warnings, [])
+
+    def test_matches_xbox_series_bluetooth_layout(self):
+        # Offsets as SDL's HIDAPI_DriverXboxOneBluetooth_HandleButtons reads the
+        # Xbox Series X (fw 5.x) packet, where data[0] is the report ID:
+        # hat in data[13], buttons in data[14..15], Share in data[16].
+        self.assertEqual(self.d.report_ids, [1, 3])
+        self.assertEqual(self.d.max_input_report_len(), 17)
+        for name, byte in (("X", 0), ("Y", 2), ("Z", 4), ("Rz", 6)):
+            self.assertEqual((self.f[name].bit_offset, self.f[name].bit_size), (byte * 8, 16))
+        self.assertEqual((self.f["Brake"].bit_offset, self.f["Brake"].logical_max), (64, 1023))
+        self.assertEqual((self.f["Accelerator"].bit_offset, self.f["Accelerator"].logical_max), (80, 1023))
+        wire = lambda f: 1 + f.bit_offset // 8  # noqa: E731  (byte index including the ID byte)
+        self.assertEqual(wire(self.f["Hat Switch"]), 13)
+        self.assertEqual((self.f["Hat Switch"].logical_min, self.f["Hat Switch"].logical_max), (1, 8))
+        self.assertEqual(wire(self.f["Button 1"]), 14)     # A = data[14] & 0x01
+        self.assertEqual(wire(self.f["Button 11"]), 15)    # View = data[15] & 0x04
+        self.assertEqual(self.f["Button 11"].bit_offset % 8, 2)
+        self.assertEqual(wire(self.f["Record"]), 16)       # Share = data[16] & 0x01
+
+    def test_rumble_output_report(self):
+        out = [f for f in self.d.fields if f.kind == "Output" and not f.is_constant]
+        self.assertEqual([f.name for f in out],
+                         ["DC Enable Actuators"] + ["Magnitude"] * 4 + ["Duration", "Start Delay", "Loop Count"])
+        self.assertTrue(all(f.report_id == 3 for f in out))
+
+    def test_hat_centered_is_zero(self):
+        self.assertIn("null", self.f["Hat Switch"].describe_value(0))
+        self.assertEqual(self.f["Hat Switch"].describe_value(1), "1 (N)")
+
+
 class SummaryNoteTests(unittest.TestCase):
     @staticmethod
     def hit(key, peak=1):

@@ -110,13 +110,14 @@ def parse_int(text: str) -> int:
 
 
 def load_descriptor_file(path: str) -> bytes:
-    """Accept either raw binary or a hex text dump ("05 01 09 05", "0x05, 0x01", ...)."""
+    """Accept raw binary, or hex text ("05 01 09 05", "0x05, 0x01", ...) with optional # comments."""
     with open(path, "rb") as fh:
         blob = fh.read()
     try:
         text = blob.decode("ascii")
     except UnicodeDecodeError:
         return blob
+    text = re.sub(r"#[^\n]*", "", text)      # allow "# comment" lines
     tokens = re.findall(r"(?:0x)?([0-9A-Fa-f]{2})\b", text)
     stripped = re.sub(r"0x|[\s,]", "", text)
     if tokens and re.fullmatch(r"[0-9A-Fa-f]*", stripped):

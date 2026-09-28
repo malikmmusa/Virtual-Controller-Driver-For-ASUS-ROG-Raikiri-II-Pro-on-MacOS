@@ -336,6 +336,15 @@ Two tests settle it:
   GeForce NOW. GFN's own HID code may still defer the device to Apple's
   framework; if so, only Phases 3–4 fix GFN.
 
+**Result of `sdl_probe.py --no-mfi`: works.** SDL 2.32.10 then lists
+`ASUSTeK RAIKIRI II PRO PC`, GUID `0300b3cc050b0000661c000009050000`, with 16
+buttons, 6 axes and 1 hat, which is exactly the shape the mapping assumes.
+Without the mapping it's "game controller: no"; with it, "YES". Live input
+came through with the right names: a, x, y, both sticks, and both triggers
+going 0 → 32767. The exact GUID (name CRC `0xCCB3`) is now the first line of
+the mapping file, so GFN's SDL build matches it even without SDL's CRC
+fallback.
+
 ## Conclusions
 
 1. **The hypothesis is confirmed, with the exact mechanism.** Apple's

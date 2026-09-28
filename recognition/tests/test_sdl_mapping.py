@@ -27,11 +27,15 @@ except ImportError:
 class FormatTests(unittest.TestCase):
     def test_lines(self):
         maps = load_mappings()
-        self.assertEqual(len(maps), 2)
+        self.assertEqual(len(maps), 3)
+        # Exact GUID captured on the Mac, then CRC-less fallbacks.
+        self.assertEqual([m.split(",")[0] for m in maps],
+                         ["0300b3cc050b0000661c000009050000", "03000000050b0000661c000009050000",
+                          "03000000050b0000661c000000000000"])
+        self.assertEqual(len({m.split(",", 1)[1] for m in maps}), 1)   # same mapping body
         for m in maps:
-            self.assertTrue(m.startswith("03000000050b0000661c0000"))
             self.assertTrue(m.endswith("platform:Mac OS X,"))
-        self.assertEqual(env_value(maps).count("\n"), 1)
+        self.assertEqual(env_value(maps).count("\n"), 2)
 
 
 @unittest.skipUnless(sdl2, "PySDL2 not installed")
@@ -49,7 +53,8 @@ class SdlTests(unittest.TestCase):
             g = sdl2.SDL_JoystickGetGUIDFromString(m.split(",")[0].encode())
             v, p, ver, crc = (ctypes.c_uint16() for _ in range(4))
             sdl2.SDL_GetJoystickGUIDInfo(g, *(ctypes.byref(x) for x in (v, p, ver, crc)))
-            self.assertEqual((v.value, p.value, crc.value), (0x0B05, 0x1C66, 0))
+            self.assertEqual((v.value, p.value), (0x0B05, 0x1C66))
+            self.assertIn(crc.value, (0, 0xCCB3))
             self.assertIn(ver.value, (0x0509, 0))
             self.assertGreaterEqual(sdl2.SDL_GameControllerAddMapping(m.encode()), 0)
 

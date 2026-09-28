@@ -66,41 +66,66 @@ weak; to verify), duration and start delay in 10 ms units, and a loop count.
 
 ## Controls
 
-Field keys are `I<report id>@<bit offset>+<bit size>`, as printed by the tool.
+Captured with `map` over Bluetooth on 2026-09-28
+([captures/raikiri-bt-mapping.json](captures/raikiri-bt-mapping.json)).
+Field keys are `I<report id>@<bit offset>+<bit size>`, with the offset counted
+from the byte after the report ID. Every standard control matches the Xbox
+Series Bluetooth layout above.
 
-| Control | Field | Report/bit | Rest | Pressed | Also changes |
+| Control | Field | Report/bit | Rest | Pressed | Notes |
 |---|---|---|---|---|---|
-| A | | | | | |
-| B | | | | | |
-| X | | | | | |
-| Y | | | | | |
-| LB | | | | | |
-| RB | | | | | |
-| LT | | | | | |
-| RT | | | | | |
-| View | | | | | |
-| Menu | | | | | |
-| Guide | | | | | |
-| L3 | | | | | |
-| R3 | | | | | |
-| DpadUp | | | | | |
-| DpadRight | | | | | |
-| DpadDown | | | | | |
-| DpadLeft | | | | | |
-| LSLeft | | | | | |
-| LSRight | | | | | |
-| LSUp | | | | | |
-| LSDown | | | | | |
-| RSLeft | | | | | |
-| RSRight | | | | | |
-| RSUp | | | | | |
-| RSDown | | | | | |
-| M1 | | | | | |
-| M2 | | | | | |
-| M3 | | | | | |
-| M4 | | | | | |
-| M5 | | | | | |
-| M6 | | | | | |
+| A | Button 1 | I1@104+1 | 0 | 1 | |
+| B | Button 2 | I1@105+1 | 0 | 1 | |
+| X | Button 4 | I1@107+1 | 0 | 1 | |
+| Y | Button 5 | I1@108+1 | 0 | 1 | |
+| LB | Button 7 | I1@110+1 | 0 | 1 | |
+| RB | Button 8 | I1@111+1 | 0 | 1 | |
+| LT | Brake | I1@64+10 | 0 | 1023 | Analog only, no digital bit |
+| RT | Accelerator | I1@80+10 | 0 | 1023 | Analog only, no digital bit |
+| View | Button 11 | I1@114+1 | 0 | 1 | |
+| Menu | Button 12 | I1@115+1 | 0 | 1 | |
+| Guide | *nothing in report 0x01* | | | | **Open question**; see below |
+| L3 | Button 14 | I1@117+1 | 0 | 1 | |
+| R3 | Button 15 | I1@118+1 | 0 | 1 | |
+| D-pad up / right / down / left | Hat Switch | I1@96+4 | 0 | 1 / 3 / 5 / 7 | Diagonals are the even values |
+| Left stick left / right | X | I1@0+16 | 32897 | 13 / 65515 | |
+| Left stick up / down | Y | I1@16+16 | 34136 | 6 / 65515 | Up is 0 |
+| Right stick left / right | Z | I1@32+16 | 33664 | 3 / 65455 | |
+| Right stick up / down | Rz | I1@48+16 | 33574 | 33 / 65503 | Up is 0 |
+| M1 | Button 4 | I1@107+1 | 0 | 1 | Same as X |
+| M2 | Button 5 | I1@108+1 | 0 | 1 | Same as Y |
+| M3 | Button 14 | I1@117+1 | 0 | 1 | Same as L3 |
+| M4 | Button 1 | I1@104+1 | 0 | 1 | Same as A |
+| M5 | Button 2 | I1@105+1 | 0 | 1 | Same as B |
+| M6 | Hat Switch | I1@96+4 | 0 | 1 (N) | Same as D-pad up |
+
+Never moved: buttons 3, 6, 9 and 10 (unused on Xbox too), button 13 (Xbox's
+Guide slot) and Share/Record (this controller may not have a Share button).
+
+### M buttons: copied in firmware
+
+Each M button sent exactly the bits of its assigned control, even when that
+control was a D-pad direction. None has a bit of its own. So:
+
+- Reassigning M buttons on the controller or in Armoury Crate carries over to
+  the Mac automatically. Nothing on our side needs to change.
+- The Mac can't tell an M button from the control it copies, so the Phase 3
+  daemon can't give M buttons separate functions.
+- The assignments seen here (M1 = X, M2 = Y, M3 = L3, M4 = A, M5 = B,
+  M6 = D-pad up) are whatever the active profile held during the capture.
+
+### Guide button: open question
+
+Pressing Guide changed nothing in report 0x01. Xbox puts Guide at button 13,
+which never moved. Possible explanations:
+
+1. It arrives in a separate report ID that the descriptor doesn't declare.
+   Older Xbox One S firmware did this. The tool used to hide such reports;
+   `monitor` and `map` now print them.
+2. The controller keeps the button for itself (power, pairing, profiles or
+   menus) and never sends it over Bluetooth.
+
+Check by running `monitor` and pressing only Guide.
 
 ## Observations
 

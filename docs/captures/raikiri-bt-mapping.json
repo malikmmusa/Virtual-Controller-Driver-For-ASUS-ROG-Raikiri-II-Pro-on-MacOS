@@ -1,0 +1,590 @@
+{
+  "created": "2026-09-28T15:31:55+00:00",
+  "device": {
+    "vendor_id": "0x0B05",
+    "product_id": "0x1C66",
+    "product": "RAIKIRI II PRO PC",
+    "manufacturer": "ASUSTeK",
+    "bus": "Bluetooth",
+    "usages": [
+      [
+        "0x0001",
+        "0x0005"
+      ],
+      [
+        "0x0001",
+        "0x0001"
+      ]
+    ]
+  },
+  "descriptor_hex": "05010905a10185010901a10009300931150027ffff0000950275108102c00901a10009320935150027ffff0000950275108102c0050209c5150026ff039501750a810215002500750695018103050209c4150026ff039501750a81021500250075069501810305010939150125083500463b016614007504950181427504950115002500350045006500810305091901290f150025017501950f810215002500750195018103050c0ab2001500250195017501810215002500750795018103050f09218503a102099715002501750495019102150025007504950191030970150025647508950491020950660110550e150026ff0075089501910209a7150026ff0075089501910265005500097c150026ff00750895019102c0c0",
+  "uses_report_ids": true,
+  "sample_reports": {
+    "0x01": "01d9804e85ca8144820000000000000000"
+  },
+  "controls": {
+    "A": {
+      "fields": [
+        {
+          "key": "I1@104+1",
+          "name": "Button 1",
+          "usage_page": 9,
+          "usage": 1,
+          "report_id": 1,
+          "bit_offset": 104,
+          "bit_size": 1,
+          "logical_min": 0,
+          "logical_max": 1,
+          "rest": 0,
+          "peak": 1,
+          "deviation": 1.0
+        }
+      ]
+    },
+    "B": {
+      "fields": [
+        {
+          "key": "I1@105+1",
+          "name": "Button 2",
+          "usage_page": 9,
+          "usage": 2,
+          "report_id": 1,
+          "bit_offset": 105,
+          "bit_size": 1,
+          "logical_min": 0,
+          "logical_max": 1,
+          "rest": 0,
+          "peak": 1,
+          "deviation": 1.0
+        }
+      ]
+    },
+    "X": {
+      "fields": [
+        {
+          "key": "I1@107+1",
+          "name": "Button 4",
+          "usage_page": 9,
+          "usage": 4,
+          "report_id": 1,
+          "bit_offset": 107,
+          "bit_size": 1,
+          "logical_min": 0,
+          "logical_max": 1,
+          "rest": 0,
+          "peak": 1,
+          "deviation": 1.0
+        }
+      ]
+    },
+    "Y": {
+      "fields": [
+        {
+          "key": "I1@108+1",
+          "name": "Button 5",
+          "usage_page": 9,
+          "usage": 5,
+          "report_id": 1,
+          "bit_offset": 108,
+          "bit_size": 1,
+          "logical_min": 0,
+          "logical_max": 1,
+          "rest": 0,
+          "peak": 1,
+          "deviation": 1.0
+        }
+      ]
+    },
+    "LB": {
+      "fields": [
+        {
+          "key": "I1@110+1",
+          "name": "Button 7",
+          "usage_page": 9,
+          "usage": 7,
+          "report_id": 1,
+          "bit_offset": 110,
+          "bit_size": 1,
+          "logical_min": 0,
+          "logical_max": 1,
+          "rest": 0,
+          "peak": 1,
+          "deviation": 1.0
+        }
+      ]
+    },
+    "RB": {
+      "fields": [
+        {
+          "key": "I1@111+1",
+          "name": "Button 8",
+          "usage_page": 9,
+          "usage": 8,
+          "report_id": 1,
+          "bit_offset": 111,
+          "bit_size": 1,
+          "logical_min": 0,
+          "logical_max": 1,
+          "rest": 0,
+          "peak": 1,
+          "deviation": 1.0
+        }
+      ]
+    },
+    "LT": {
+      "fields": [
+        {
+          "key": "I1@64+10",
+          "name": "Brake",
+          "usage_page": 2,
+          "usage": 197,
+          "report_id": 1,
+          "bit_offset": 64,
+          "bit_size": 10,
+          "logical_min": 0,
+          "logical_max": 1023,
+          "rest": 0,
+          "peak": 1023,
+          "deviation": 1.0
+        }
+      ]
+    },
+    "RT": {
+      "fields": [
+        {
+          "key": "I1@80+10",
+          "name": "Accelerator",
+          "usage_page": 2,
+          "usage": 196,
+          "report_id": 1,
+          "bit_offset": 80,
+          "bit_size": 10,
+          "logical_min": 0,
+          "logical_max": 1023,
+          "rest": 0,
+          "peak": 1023,
+          "deviation": 1.0
+        }
+      ]
+    },
+    "View": {
+      "fields": [
+        {
+          "key": "I1@114+1",
+          "name": "Button 11",
+          "usage_page": 9,
+          "usage": 11,
+          "report_id": 1,
+          "bit_offset": 114,
+          "bit_size": 1,
+          "logical_min": 0,
+          "logical_max": 1,
+          "rest": 0,
+          "peak": 1,
+          "deviation": 1.0
+        }
+      ]
+    },
+    "Menu": {
+      "fields": [
+        {
+          "key": "I1@115+1",
+          "name": "Button 12",
+          "usage_page": 9,
+          "usage": 12,
+          "report_id": 1,
+          "bit_offset": 115,
+          "bit_size": 1,
+          "logical_min": 0,
+          "logical_max": 1,
+          "rest": 0,
+          "peak": 1,
+          "deviation": 1.0
+        }
+      ]
+    },
+    "Guide": {
+      "skipped": true
+    },
+    "L3": {
+      "fields": [
+        {
+          "key": "I1@117+1",
+          "name": "Button 14",
+          "usage_page": 9,
+          "usage": 14,
+          "report_id": 1,
+          "bit_offset": 117,
+          "bit_size": 1,
+          "logical_min": 0,
+          "logical_max": 1,
+          "rest": 0,
+          "peak": 1,
+          "deviation": 1.0
+        }
+      ]
+    },
+    "R3": {
+      "fields": [
+        {
+          "key": "I1@118+1",
+          "name": "Button 15",
+          "usage_page": 9,
+          "usage": 15,
+          "report_id": 1,
+          "bit_offset": 118,
+          "bit_size": 1,
+          "logical_min": 0,
+          "logical_max": 1,
+          "rest": 0,
+          "peak": 1,
+          "deviation": 1.0
+        }
+      ]
+    },
+    "DpadUp": {
+      "fields": [
+        {
+          "key": "I1@96+4",
+          "name": "Hat Switch",
+          "usage_page": 1,
+          "usage": 57,
+          "report_id": 1,
+          "bit_offset": 96,
+          "bit_size": 4,
+          "logical_min": 1,
+          "logical_max": 8,
+          "rest": 0,
+          "peak": 1,
+          "deviation": 1.0
+        }
+      ]
+    },
+    "DpadRight": {
+      "fields": [
+        {
+          "key": "I1@96+4",
+          "name": "Hat Switch",
+          "usage_page": 1,
+          "usage": 57,
+          "report_id": 1,
+          "bit_offset": 96,
+          "bit_size": 4,
+          "logical_min": 1,
+          "logical_max": 8,
+          "rest": 0,
+          "peak": 3,
+          "deviation": 1.0
+        }
+      ]
+    },
+    "DpadDown": {
+      "fields": [
+        {
+          "key": "I1@96+4",
+          "name": "Hat Switch",
+          "usage_page": 1,
+          "usage": 57,
+          "report_id": 1,
+          "bit_offset": 96,
+          "bit_size": 4,
+          "logical_min": 1,
+          "logical_max": 8,
+          "rest": 0,
+          "peak": 5,
+          "deviation": 1.0
+        }
+      ]
+    },
+    "DpadLeft": {
+      "fields": [
+        {
+          "key": "I1@96+4",
+          "name": "Hat Switch",
+          "usage_page": 1,
+          "usage": 57,
+          "report_id": 1,
+          "bit_offset": 96,
+          "bit_size": 4,
+          "logical_min": 1,
+          "logical_max": 8,
+          "rest": 0,
+          "peak": 7,
+          "deviation": 1.0
+        }
+      ]
+    },
+    "LSLeft": {
+      "fields": [
+        {
+          "key": "I1@0+16",
+          "name": "X",
+          "usage_page": 1,
+          "usage": 48,
+          "report_id": 1,
+          "bit_offset": 0,
+          "bit_size": 16,
+          "logical_min": 0,
+          "logical_max": 65535,
+          "rest": 32897,
+          "peak": 13,
+          "deviation": 0.502
+        }
+      ]
+    },
+    "LSRight": {
+      "fields": [
+        {
+          "key": "I1@0+16",
+          "name": "X",
+          "usage_page": 1,
+          "usage": 48,
+          "report_id": 1,
+          "bit_offset": 0,
+          "bit_size": 16,
+          "logical_min": 0,
+          "logical_max": 65535,
+          "rest": 32897,
+          "peak": 65515,
+          "deviation": 0.498
+        }
+      ]
+    },
+    "LSUp": {
+      "fields": [
+        {
+          "key": "I1@16+16",
+          "name": "Y",
+          "usage_page": 1,
+          "usage": 49,
+          "report_id": 1,
+          "bit_offset": 16,
+          "bit_size": 16,
+          "logical_min": 0,
+          "logical_max": 65535,
+          "rest": 34136,
+          "peak": 6,
+          "deviation": 0.521
+        }
+      ]
+    },
+    "LSDown": {
+      "fields": [
+        {
+          "key": "I1@16+16",
+          "name": "Y",
+          "usage_page": 1,
+          "usage": 49,
+          "report_id": 1,
+          "bit_offset": 16,
+          "bit_size": 16,
+          "logical_min": 0,
+          "logical_max": 65535,
+          "rest": 34136,
+          "peak": 65515,
+          "deviation": 0.479
+        }
+      ]
+    },
+    "RSLeft": {
+      "fields": [
+        {
+          "key": "I1@32+16",
+          "name": "Z",
+          "usage_page": 1,
+          "usage": 50,
+          "report_id": 1,
+          "bit_offset": 32,
+          "bit_size": 16,
+          "logical_min": 0,
+          "logical_max": 65535,
+          "rest": 33664,
+          "peak": 3,
+          "deviation": 0.514
+        }
+      ]
+    },
+    "RSRight": {
+      "fields": [
+        {
+          "key": "I1@32+16",
+          "name": "Z",
+          "usage_page": 1,
+          "usage": 50,
+          "report_id": 1,
+          "bit_offset": 32,
+          "bit_size": 16,
+          "logical_min": 0,
+          "logical_max": 65535,
+          "rest": 33664,
+          "peak": 65455,
+          "deviation": 0.485
+        }
+      ]
+    },
+    "RSUp": {
+      "fields": [
+        {
+          "key": "I1@48+16",
+          "name": "Rz",
+          "usage_page": 1,
+          "usage": 53,
+          "report_id": 1,
+          "bit_offset": 48,
+          "bit_size": 16,
+          "logical_min": 0,
+          "logical_max": 65535,
+          "rest": 33574,
+          "peak": 33,
+          "deviation": 0.512
+        },
+        {
+          "key": "I1@32+16",
+          "name": "Z",
+          "usage_page": 1,
+          "usage": 50,
+          "report_id": 1,
+          "bit_offset": 32,
+          "bit_size": 16,
+          "logical_min": 0,
+          "logical_max": 65535,
+          "rest": 33664,
+          "peak": 46615,
+          "deviation": 0.198
+        }
+      ]
+    },
+    "RSDown": {
+      "fields": [
+        {
+          "key": "I1@48+16",
+          "name": "Rz",
+          "usage_page": 1,
+          "usage": 53,
+          "report_id": 1,
+          "bit_offset": 48,
+          "bit_size": 16,
+          "logical_min": 0,
+          "logical_max": 65535,
+          "rest": 33574,
+          "peak": 65503,
+          "deviation": 0.487
+        }
+      ]
+    },
+    "M1": {
+      "fields": [
+        {
+          "key": "I1@107+1",
+          "name": "Button 4",
+          "usage_page": 9,
+          "usage": 4,
+          "report_id": 1,
+          "bit_offset": 107,
+          "bit_size": 1,
+          "logical_min": 0,
+          "logical_max": 1,
+          "rest": 0,
+          "peak": 1,
+          "deviation": 1.0
+        }
+      ]
+    },
+    "M2": {
+      "fields": [
+        {
+          "key": "I1@108+1",
+          "name": "Button 5",
+          "usage_page": 9,
+          "usage": 5,
+          "report_id": 1,
+          "bit_offset": 108,
+          "bit_size": 1,
+          "logical_min": 0,
+          "logical_max": 1,
+          "rest": 0,
+          "peak": 1,
+          "deviation": 1.0
+        }
+      ]
+    },
+    "M3": {
+      "fields": [
+        {
+          "key": "I1@117+1",
+          "name": "Button 14",
+          "usage_page": 9,
+          "usage": 14,
+          "report_id": 1,
+          "bit_offset": 117,
+          "bit_size": 1,
+          "logical_min": 0,
+          "logical_max": 1,
+          "rest": 0,
+          "peak": 1,
+          "deviation": 1.0
+        }
+      ]
+    },
+    "M4": {
+      "fields": [
+        {
+          "key": "I1@104+1",
+          "name": "Button 1",
+          "usage_page": 9,
+          "usage": 1,
+          "report_id": 1,
+          "bit_offset": 104,
+          "bit_size": 1,
+          "logical_min": 0,
+          "logical_max": 1,
+          "rest": 0,
+          "peak": 1,
+          "deviation": 1.0
+        }
+      ]
+    },
+    "M5": {
+      "fields": [
+        {
+          "key": "I1@105+1",
+          "name": "Button 2",
+          "usage_page": 9,
+          "usage": 2,
+          "report_id": 1,
+          "bit_offset": 105,
+          "bit_size": 1,
+          "logical_min": 0,
+          "logical_max": 1,
+          "rest": 0,
+          "peak": 1,
+          "deviation": 1.0
+        }
+      ]
+    },
+    "M6": {
+      "fields": [
+        {
+          "key": "I1@96+4",
+          "name": "Hat Switch",
+          "usage_page": 1,
+          "usage": 57,
+          "report_id": 1,
+          "bit_offset": 96,
+          "bit_size": 4,
+          "logical_min": 1,
+          "logical_max": 8,
+          "rest": 0,
+          "peak": 1,
+          "deviation": 1.0
+        }
+      ]
+    },
+    "Extra1": {
+      "skipped": true
+    },
+    "Extra2": {
+      "skipped": true
+    }
+  }
+}

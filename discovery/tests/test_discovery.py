@@ -213,6 +213,16 @@ class RealDescriptorTests(unittest.TestCase):
                          ["DC Enable Actuators"] + ["Magnitude"] * 4 + ["Duration", "Start Delay", "Loop Count"])
         self.assertTrue(all(f.report_id == 3 for f in out))
 
+    def test_captured_mapping_shows_firmware_copied_m_buttons(self):
+        import json
+        with open(os.path.join(os.path.dirname(CAPTURE), "raikiri-bt-mapping.json")) as fh:
+            results = json.load(fh)["controls"]
+        notes = summary_notes(results, {f.key: f.name for f in self.d.input_fields()})
+        copied = [n for n in notes if "remaps it in firmware" in n]
+        self.assertEqual(len(copied), 6)
+        self.assertTrue(any("M6 sent exactly what DpadUp sends" in n for n in copied))
+        self.assertIn("Button 13", notes[-1])      # Xbox's Guide slot never moved
+
     def test_hat_centered_is_zero(self):
         self.assertIn("null", self.f["Hat Switch"].describe_value(0))
         self.assertEqual(self.f["Hat Switch"].describe_value(1), "1 (N)")

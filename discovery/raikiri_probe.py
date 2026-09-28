@@ -335,7 +335,11 @@ def cmd_monitor(args) -> None:
             if prev == report and not args.all:
                 continue
             decoded = ""
-            if desc:
+            if desc and not desc.input_fields(rid):
+                # Some Xbox firmware sends the Guide button in its own report;
+                # never hide a report the descriptor can't explain.
+                decoded = f"(report ID 0x{rid:02X} is not declared in the descriptor)"
+            elif desc:
                 vals = decode(desc, report)
                 decoded = ("(first report with this ID)" if rid not in last_vals else
                            format_changes(desc, rid, vals, last_vals[rid], args.min_delta))
@@ -364,12 +368,18 @@ class InputState:
         self.dev, self.desc = dev, desc
         self.values: Dict[str, int] = {}
         self.last_raw: Dict[int, bytes] = {}
+        self.undeclared: List[str] = []
 
     def poll(self) -> bool:
         report = read_report(self.dev)
         if report is None:
             return False
         rid = self.desc.split_report(report)[0]
+        if not self.desc.input_fields(rid) and report != self.last_raw.get(rid):
+            # Can't be decoded into fields, so press detection can't see it.
+            # Show it so the user can tie it to whatever they just pressed.
+            print(f"   note: report ID 0x{rid:02X} is not in the descriptor: {report.hex(' ')}", flush=True)
+            self.undeclared.append(report.hex())
         self.last_raw[rid] = report
         self.values.update(decode(self.desc, report))
         return True
@@ -478,6 +488,7 @@ def cmd_map(args) -> None:
         "descriptor_hex": raw.hex() if raw else None,
         "uses_report_ids": desc.uses_report_ids,
         "sample_reports": {f"0x{rid:02X}": r.hex() for rid, r in state.last_raw.items()},
+        "undeclared_reports": state.undeclared,
         "controls": results,
     }
     with open(args.out, "w") as fh:

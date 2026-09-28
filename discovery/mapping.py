@@ -154,7 +154,7 @@ DEFAULT_CONTROLS: List[Tuple[str, str]] = [
     ("RT", "RT (right trigger) - pull it ALL the way"),
     ("View", "View / Back / Select (left of the center)"),
     ("Menu", "Menu / Start (right of the center)"),
-    ("Guide", "ROG / Home / Guide button"),
+    ("Guide", "Guide: the round logo button in the CENTER of the controller (short press only)"),
     ("L3", "L3 (click the left stick)"),
     ("R3", "R3 (click the right stick)"),
     ("DpadUp", "D-pad UP"),

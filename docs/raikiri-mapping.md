@@ -84,7 +84,7 @@ Series Bluetooth layout above.
 | RT | Accelerator | I1@80+10 | 0 | 1023 | Analog only, no digital bit |
 | View | Button 11 | I1@114+1 | 0 | 1 | |
 | Menu | Button 12 | I1@115+1 | 0 | 1 | |
-| Guide | *nothing in report 0x01* | | | | **Open question**; see below |
+| Guide | *not tested yet* | | | | See below |
 | L3 | Button 14 | I1@117+1 | 0 | 1 | |
 | R3 | Button 15 | I1@118+1 | 0 | 1 | |
 | D-pad up / right / down / left | Hat Switch | I1@96+4 | 0 | 1 / 3 / 5 / 7 | Diagonals are the even values |
@@ -100,7 +100,8 @@ Series Bluetooth layout above.
 | M6 | Hat Switch | I1@96+4 | 0 | 1 (N) | Same as D-pad up |
 
 Never moved: buttons 3, 6, 9 and 10 (unused on Xbox too), button 13 (Xbox's
-Guide slot) and Share/Record (this controller may not have a Share button).
+Guide slot, but Guide wasn't pressed in this run) and Share/Record (this
+controller may not have a Share button).
 
 ### M buttons: copied in firmware
 
@@ -114,18 +115,15 @@ control was a D-pad direction. None has a bit of its own. So:
 - The assignments seen here (M1 = X, M2 = Y, M3 = L3, M4 = A, M5 = B,
   M6 = D-pad up) are whatever the active profile held during the capture.
 
-### Guide button: open question
+### Guide button: not tested yet
 
-Pressing Guide changed nothing in report 0x01. Xbox puts Guide at button 13,
-which never moved. Possible explanations:
-
-1. It arrives in a separate report ID that the descriptor doesn't declare.
-   Older Xbox One S firmware did this. The tool used to hide such reports;
-   `monitor` and `map` now print them.
-2. The controller keeps the button for itself (power, pairing, profiles or
-   menus) and never sends it over Bluetooth.
-
-Check by running `monitor` and pressing only Guide.
+"Guide" is the round logo button in the center of the controller, the one
+Xbox marks with its logo. It wasn't pressed during the first `map` run
+(prompt unclear), so it shows as skipped. We expect button 13 if the
+controller follows the Xbox layout. Other outcomes would be a separate
+report ID that the descriptor doesn't declare (older Xbox One S firmware did
+this, and `monitor` and `map` now print such reports), or no report at all
+if the controller keeps the button for itself.
 
 ## Observations
 

@@ -14,8 +14,8 @@ Fill in the Controls table from `raikiri_probe.py map` output; see
 | Transport (wireless mode) | Bluetooth |
 | Report ID(s) | 0x01 input (state), 0x03 output (rumble) |
 | Input report length (bytes, incl. ID) | 17 |
-| Idle behavior | *TBD: streams at N Hz / on change only* |
-| Report interval (median / p95 ms) | *TBD* |
+| Idle behavior | On change only: no reports while untouched |
+| Report interval | About 30 ms steps (33 Hz) while a stick moves: min 19, median 30 ms. Gaps between separate presses are multiples of about 30 ms. |
 | Other interfaces | None over Bluetooth. The single interface is the gamepad; "Pointer" is only the Physical collection around the sticks. |
 
 ## Descriptor findings
@@ -103,6 +103,30 @@ Field keys are `I<report id>@<bit offset>+<bit size>`, as printed by the tool.
 | M6 | | | | | |
 
 ## Observations
+
+From the first `monitor` capture (Bluetooth, macOS):
+
+- **Report timing.** The controller sends only when something changes, and
+  never faster than about every 30 ms. Almost every interval is close to a
+  multiple of 30 ms (29.8, 59.9, 89, 120, 181, 240, 300…). All 65 received
+  reports were distinct, so nothing was hidden by the tool's de-duplication.
+  At 33 Hz, input can wait up to about 30 ms before it's even sent. That's a
+  property of the controller and its Bluetooth link, not of our code, and it
+  sets the latency floor for this connection. It's worth comparing with other
+  connection modes later.
+- **Buttons seen** in the capture all landed in the slots the Xbox layout
+  predicts: 1, 4, 5, 7, 8 and 14. None landed in the unused slots 3, 6, 9 or
+  10. The D-pad reported hat value 5 (S). `map` will confirm which physical
+  button is which.
+- **Resting stick values** in this capture: left X ≈ 33040–33346,
+  left Y ≈ 34106 (about 4% off the 32768 center), right X 32890,
+  right Y 32995.
+- **Stick return artifact.** After the left stick is released, reports
+  alternate between one fixed value (for example X 33295, Y 34127 repeated
+  exactly) and a series that converges toward center over about 300 ms,
+  then drifts slowly for another second. It looks like firmware filtering.
+  It's within a normal dead zone (about 5% of range), but Phase 3 should
+  keep it in mind.
 
 *Record which controller profile was active and what each M button was
 assigned to during the capture.*

@@ -345,24 +345,40 @@ going 0 → 32767. The exact GUID (name CRC `0xCCB3`) is now the first line of
 the mapping file, so GFN's SDL build matches it even without SDL's CRC
 fallback.
 
+**Result of `launch_gfn_with_mapping.sh --no-mfi`: doesn't work.** GFN
+logged `"connectedGamepadInfoList":[]` at startup and again after the
+controller was power-cycled, and the game ignored the controller. GFN's own
+HID layer also defers devices the framework claims (`Not handling device %p
+via HID because GameController will take it.`), and no SDL hint reaches
+that check. The mapping is still correct and useful for other SDL apps run
+with `SDL_JOYSTICK_MFI=0`.
+
 ## Conclusions
 
 1. **The hypothesis is confirmed, with the exact mechanism.** Apple's
    framework binds its game controller driver through IOKit personalities
-   keyed on vendor/product ID. The Raikiri's `0B05:1C66` isn't listed, so it
-   gets the generic HID driver and apps never see a `GCController`.
-2. **Phase 4's target is `045E:0B13`**, the Xbox Series X Wireless
-   Controller. Its personality allows virtual devices (`GCIOMatchVirtual`),
-   and the Raikiri already produces that controller's exact report format.
-   So the virtual device can reuse the Raikiri's own descriptor, and the
-   Phase 3 daemon can forward reports almost unchanged.
-3. **GeForce NOW may not need any of that.** Its SDL path accepts any
-   controller with a mapping. Experiment 6 tests a zero-install fix before
-   anything needing signing or security changes.
-
-Next: run Experiment 6. If it works, you can play GeForce NOW right away,
-and Phases 3–4 become about other apps and Apple's framework. If it doesn't,
-GFN's log will say more, and Phase 3 starts as planned.
+   in `AppleGameControllerPersonality.kext`, keyed on vendor/product ID.
+   `0B05:1C66` isn't listed, so the Raikiri gets the generic HID driver.
+2. **macOS 27 makes it worse: the Raikiri is claimed but never delivered.**
+   gamecontrollerd's Generic Device Manager matches it, so
+   `GCController.supportsHIDDevice` returns YES, but apps get no
+   `GCController`. Any app that defers claimed devices to the framework
+   drops it, including SDL by default and GeForce NOW always. That's
+   probably worth a Feedback report to Apple (Game Controllers area).
+3. **No configuration-only fix exists for GeForce NOW.** The browser client
+   needs Chrome's "standard" mapping, and the native app defers to the
+   framework. The one remaining shortcut would be patching GFN's binary to
+   disable its GameController backend, as [gfn-fix] does for the Steam
+   Controller. It's fragile across GFN updates, needs re-signing a modified
+   copy, and modifying the client may conflict with NVIDIA's terms. This
+   project doesn't take that route unless you decide to.
+4. **The plan stands, with a precise target.** Phase 4 presents a virtual
+   **Xbox Series X Wireless Controller, `045E:0B13`**. Apple's personality
+   for it allows virtual devices (`GCIOMatchVirtual`), and the Raikiri
+   already produces its exact report format, so the virtual device can reuse
+   the Raikiri's descriptor. Phase 3 reads the Raikiri and forwards reports
+   almost unchanged. A real Xbox controller appears as a normal
+   `GCController`, which is the path GFN uses.
 
 [sdl-list]: https://github.com/libsdl-org/SDL/blob/main/src/joystick/controller_list.h
 [apple-list]: https://developer.apple.com/forums/thread/763679

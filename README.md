@@ -14,7 +14,7 @@ for now.
 | Phase | What | Status |
 |---|---|---|
 | 1 | **Discovery:** dump the HID report descriptor and live reports; build a control → field mapping table | Done. Over Bluetooth the Raikiri already sends Xbox Series-format reports under ASUS's VID/PID: [docs/raikiri-mapping.md](docs/raikiri-mapping.md) |
-| 2 | **Verify the hypothesis:** what makes GameController recognize a device as an Xbox controller (VID/PID, descriptor, transport) | Confirmed: an IOKit allowlist keyed on VID/PID; `045E:0B13` allows virtual devices. Testing a driverless SDL-mapping fix for GeForce NOW: [docs/phase2-recognition.md](docs/phase2-recognition.md) |
+| 2 | **Verify the hypothesis:** what makes GameController recognize a device as an Xbox controller (VID/PID, descriptor, transport) | Done. An IOKit allowlist keyed on VID/PID; macOS 27 claims the Raikiri but never delivers it to apps; no config-only fix for GeForce NOW. Target: virtual `045E:0B13`, which allows virtual devices: [docs/phase2-recognition.md](docs/phase2-recognition.md) |
 | 3 | **Userspace daemon:** read the Raikiri via IOHIDManager and translate reports to Xbox format with minimal latency | Not started |
 | 4 | **Virtual device:** a DriverKit virtual HID device presenting the translated reports as an Xbox controller (signing, entitlements, and the dev-mode path explained before touching any security settings) | Not started |
 

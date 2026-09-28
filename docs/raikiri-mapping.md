@@ -84,7 +84,7 @@ Series Bluetooth layout above.
 | RT | Accelerator | I1@80+10 | 0 | 1023 | Analog only, no digital bit |
 | View | Button 11 | I1@114+1 | 0 | 1 | |
 | Menu | Button 12 | I1@115+1 | 0 | 1 | |
-| Guide | *not tested yet* | | | | See below |
+| Guide | Button 13 | I1@116+1 | 0 | 1 | The center power button; a quick tap reports Guide |
 | L3 | Button 14 | I1@117+1 | 0 | 1 | |
 | R3 | Button 15 | I1@118+1 | 0 | 1 | |
 | D-pad up / right / down / left | Hat Switch | I1@96+4 | 0 | 1 / 3 / 5 / 7 | Diagonals are the even values |
@@ -99,9 +99,8 @@ Series Bluetooth layout above.
 | M5 | Button 2 | I1@105+1 | 0 | 1 | Same as B |
 | M6 | Hat Switch | I1@96+4 | 0 | 1 (N) | Same as D-pad up |
 
-Never moved: buttons 3, 6, 9 and 10 (unused on Xbox too), button 13 (Xbox's
-Guide slot, but Guide wasn't pressed in this run) and Share/Record (this
-controller may not have a Share button).
+Never moved: buttons 3, 6, 9 and 10 (unused on Xbox too) and Share/Record
+(this controller has no Share button).
 
 ### M buttons: copied in firmware
 
@@ -115,19 +114,12 @@ control was a D-pad direction. None has a bit of its own. So:
 - The assignments seen here (M1 = X, M2 = Y, M3 = L3, M4 = A, M5 = B,
   M6 = D-pad up) are whatever the active profile held during the capture.
 
-### Guide button: not tested yet
+### Guide button
 
-"Guide" is the center button. On an Xbox controller it carries the Xbox
-logo and is also the power button: a tap means Guide, a long hold means
-power. The Raikiri's only center button is labeled as its power button, so
-the test is to tap it briefly while `monitor` runs. It wasn't pressed during the first `map` run
-(prompt unclear), so it shows as skipped. We expect button 13 if the
-controller follows the Xbox layout. Other outcomes would be a separate
-report ID that the descriptor doesn't declare (older Xbox One S firmware did
-this, and `monitor` and `map` now print such reports), or no report at all
-if the controller keeps the button for itself. If it never sends Guide,
-the Phase 3 daemon can produce Guide from a button combination (for example,
-View + Menu held together).
+The center power button is also Guide, as on Xbox controllers. A quick tap
+sets button 13 (byte 15, bit 0x10), exactly where the Xbox Series layout puts
+it (verified separately with `monitor`). Taps registered for 90–120 ms and
+didn't power the controller off.
 
 ## Observations
 

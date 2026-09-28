@@ -185,15 +185,38 @@ the controller's ~30 ms report cadence (Phase 1), and the virtual device
 hand-off, which Phase 3's numbers don't cover. The bridge now reports the
 last one as `virtual: queue wait` and `virtual: dispatch` in its statistics.
 
-## 8. After step A
+## 8. Step B: running with protections on
 
-- **If it works:** restore protections, join the Apple Developer Program,
-  and install full Xcode. Step B builds the DriverKit version with the
-  development entitlements, signed for your Mac, and runs it with SIP and
-  AMFI **on**. Step B also covers **system extension developer mode**
-  (`systemextensionsctl developer on`), which lets a driver being
-  developed be installed without notarization. It requires SIP off, so
-  it's only for the SIP-off route.
-- **If it doesn't:** the failure tells us which layer rejected it: the
-  device isn't created, macOS doesn't give it Apple's Xbox driver, or GFN
-  doesn't accept it. We decide the next test from there.
+With SIP and AMFI on, macOS only lets a program create a virtual HID device
+if its restricted entitlement is backed by an Apple-issued provisioning
+profile. There's no way around that; it's the security boundary working as
+designed. So Step B needs:
+
+1. **Your own Apple Developer Program membership** ($99/year, individual).
+   Enrollment can take up to 48 hours.
+2. **Full Xcode** from the App Store. Open it once, and add your Apple ID
+   under Xcode → Settings → Accounts.
+3. **Your Mac registered** to your developer team. Xcode does this
+   automatically the first time it signs for it.
+
+Then one check decides the route:
+
+| If your team can add the "HID Virtual Device" capability (`com.apple.developer.hid.virtual.device`) | If it can't |
+|---|---|
+| **B1: Core HID, properly signed.** The Step A code stays as it is. It moves into a small app bundle, because provisioning profiles attach to apps, and gets signed with a development profile for your Mac. | **B2: DriverKit.** A driver extension creates the virtual device (DriverKit's development entitlements work with any paid account, no approval). The same app installs it as a system extension; you approve it once in System Settings. The bridge sends reports to the driver. |
+
+Either way you get a **menu bar app**: starts at login, runs the bridge,
+no Terminal needed.
+
+Development signing isn't permanent. Certificates and provisioning profiles
+expire (typically after a year), and the membership renews yearly. When a
+profile expires, rebuilding in Xcode renews it.
+
+**Restore protections now (section 7), without waiting for Step B.** The
+test build stops launching (macOS kills it), and the controller goes back
+to not working in GeForce NOW until Step B is done. That's expected.
+
+**A ready-made alternative:** [PadLink](https://padlink.nimets.com/) is a
+notarized app with a DriverKit driver that presents unrecognized
+controllers as a virtual DualShock 4, with no security changes. It's not
+tested with the Raikiri or macOS 27, but worth knowing about.

@@ -100,6 +100,12 @@ func say(_ message: String) {
 /// report, so implementations must return quickly.
 protocol ReportSink: AnyObject {
     func deliver(_ report: UnsafeBufferPointer<UInt8>)
+    /// Extra lines for the [stats] block (sinks with their own timing).
+    func statsLines() -> [String]
+}
+
+extension ReportSink {
+    func statsLines() -> [String] { [] }
 }
 
 /// Prints what changed. Decoding and printing happen on a separate
@@ -130,6 +136,7 @@ final class MultiSink: ReportSink {
     func deliver(_ report: UnsafeBufferPointer<UInt8>) {
         for sink in sinks { sink.deliver(report) }
     }
+    func statsLines() -> [String] { sinks.flatMap { $0.statsLines() } }
 }
 
 /// Forwards rumble from the virtual controller (games) to the Raikiri, at most
@@ -208,6 +215,7 @@ final class Bridge {
                     kernel -> bridge:         \(Format.summary(delivery.summary()))
                     bridge processing:        \(Format.summary(processing.summary()))
             """)
+        for line in sink.statsLines() { say("        " + line) }
     }
 }
 

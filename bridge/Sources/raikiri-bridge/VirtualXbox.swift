@@ -13,7 +13,8 @@ import Foundation
 final class VirtualXboxSink: ReportSink {
     private let device: HIDVirtualDevice
     private let delegate: Delegate
-    private let reports: AsyncStream<Data>.Continuation
+    private let reports: AsyncStream<(Data, UInt64)>.Continuation
+    private let timing = DispatchTiming()
 
     init?(onOutputReport: @escaping @Sendable ([UInt8]) -> Void) {
         let properties = HIDVirtualDevice.Properties(
@@ -36,23 +37,59 @@ final class VirtualXboxSink: ReportSink {
 
         // dispatchInputReport is async. Separate Tasks per report could run out
         // of order, so reports go through one stream with a single consumer.
-        let (stream, continuation) = AsyncStream.makeStream(of: Data.self, bufferingPolicy: .bufferingNewest(32))
+        let (stream, continuation) = AsyncStream.makeStream(of: (Data, UInt64).self,
+                                                            bufferingPolicy: .bufferingNewest(32))
         reports = continuation
         let delegate = self.delegate
+        let timing = self.timing
         Task.detached(priority: .high) {
             await device.activate(delegate: delegate)
-            for await report in stream {
+            for await (report, enqueued) in stream {
+                let start = MachClock.now()
                 do {
                     try await device.dispatchInputReport(data: report, timestamp: SuspendingClock().now)
                 } catch {
                     FileHandle.standardError.write("virtual device: dispatch failed: \(error)\n".data(using: .utf8)!)
                 }
+                timing.record(waited: MachClock.nanos(start &- enqueued), dispatch: MachClock.nanos(MachClock.now() &- start))
             }
         }
     }
 
     func deliver(_ report: UnsafeBufferPointer<UInt8>) {
-        reports.yield(Data(buffer: report))
+        if case .dropped = reports.yield((Data(buffer: report), MachClock.now())) {
+            timing.recordDrop()
+        }
+    }
+
+    func statsLines() -> [String] { timing.lines() }
+
+    /// Timing of the hand-off to Core HID, which Phase 3's numbers don't cover:
+    /// how long a report waits in the queue, and how long dispatching takes.
+    /// If dispatch were slower than the controller's report rate, reports would
+    /// pile up and the wait would grow, which would show up as lag.
+    final class DispatchTiming: @unchecked Sendable {
+        private let lock = NSLock()
+        private var waited = SampleWindow()
+        private var dispatch = SampleWindow()
+        private var drops = 0
+
+        func record(waited w: UInt64, dispatch d: UInt64) {
+            lock.lock(); defer { lock.unlock() }
+            waited.add(w)
+            dispatch.add(d)
+        }
+
+        func recordDrop() {
+            lock.lock(); defer { lock.unlock() }
+            drops += 1
+        }
+
+        func lines() -> [String] {
+            lock.lock(); defer { lock.unlock() }
+            return ["virtual: queue wait:      \(Format.summary(waited.summary()))",
+                    "virtual: dispatch:        \(Format.summary(dispatch.summary()))  dropped \(drops)"]
+        }
     }
 
     /// Receives requests the system (or a game) sends to the virtual device.

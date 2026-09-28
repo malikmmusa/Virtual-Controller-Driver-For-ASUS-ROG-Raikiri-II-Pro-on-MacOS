@@ -170,6 +170,21 @@ Paste the bridge's output and the probe's output. If `--virtual` fails with
 After this, the ad-hoc-signed test build won't launch any more (macOS kills
 it). That's expected, and shows AMFI is back on.
 
+## Step A result: it works
+
+With SIP off and `amfi_get_out_of_my_way=1` active (the first attempt
+failed only because the boot argument hadn't been set; amfid logged "The
+file is adhoc signed but contains restricted entitlements"), `raikiri-bridge
+--virtual --seize` created the virtual controller. **GeForce NOW accepted
+it**, and all controls worked in a game. Sticks seemed dead at first, but
+that turned out to be the game's aim setting (mouse), not the bridge.
+
+Open issue: the game felt very laggy. Possible sources, largest first:
+GeForce NOW streaming (network), Wi-Fi/Bluetooth coexistence on 2.4 GHz,
+the controller's ~30 ms report cadence (Phase 1), and the virtual device
+hand-off, which Phase 3's numbers don't cover. The bridge now reports the
+last one as `virtual: queue wait` and `virtual: dispatch` in its statistics.
+
 ## 8. After step A
 
 - **If it works:** restore protections, join the Apple Developer Program,

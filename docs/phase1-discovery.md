@@ -147,7 +147,7 @@ python3 raikiri_probe.py map --out raikiri_mapping.json
 
 The script first learns the resting state of every field (hands off!), then
 prompts for each control in Xbox terms (A, B, …, LT, RT, D-pad, stick
-directions, rear buttons). For each prompt: press and hold the control, then
+directions), then the M1–M4 back buttons. For each prompt: press and hold the control, then
 release. It records every field that moved, which is the **primary** field
 (analog fields first, then by how far they moved), and the value at rest and
 at the extreme. If you don't press anything for 8 seconds, it skips that
@@ -157,6 +157,37 @@ To redo a few controls: `map --controls LT,RT,Guide --out redo.json`.
 
 It prints a Markdown table at the end. Paste it into
 [`raikiri-mapping.md`](raikiri-mapping.md).
+
+## Programmable back buttons (M1–M4)
+
+The M buttons are the most important unknown, because the design decides who
+controls them. You set up a remap in Armoury Crate or on the controller, and
+it's saved in the controller's firmware. The firmware then reports M buttons
+over HID in one of three ways:
+
+| What the firmware sends | What `map` shows | What it means for us |
+|---|---|---|
+| **A copy of the assigned button.** M1 set to A sends A's bit. | M1 has the same field and value as A, plus a note saying so. | Your remaps keep working on the Mac automatically, and changing them needs no change on our side. But the Mac only ever sees "A," so the daemon can't give M1 a separate job. |
+| **Its own bit** (for example, button 14), whatever it's assigned to. | M1 has a field no other control uses. | The daemon sees M1 directly and can map it to anything through its own config file. That gives you remapping on the Mac, independent of Armoury Crate. |
+| **Nothing** (unassigned in the current profile). | M1 is *(skipped)*. | Assign it to something and map again to see which of the rows above applies. |
+
+The descriptor alone can't tell these apart: it declares 15 button slots but
+not which physical button drives each one. The end-of-map notes also list
+fields no control moved. Those are the candidate slots for M buttons in
+another profile.
+
+To pin down the behavior, run `map` twice:
+
+1. With each M button assigned to a *different* face button (M1 = A,
+   M2 = B, and so on). If the M buttons then match those face buttons, the
+   controller is copying the assigned button (row 1).
+2. With the M buttons unassigned or disabled, if the controller allows it.
+   If they still produce their own bits, they're raw inputs (row 2). If they
+   go silent, it's row 3.
+
+Profiles are stored on the controller, and so is any profile-switch button.
+Note which profile was active when you captured, because the mapping is a
+snapshot of that profile.
 
 ## What we need to learn (Phase 1 exit checklist)
 
@@ -168,7 +199,7 @@ It prints a Markdown table at the end. Paste it into
 - [ ] Triggers: usages, analog resolution, whether they also report as buttons
 - [ ] D-pad: hat switch or four buttons; value per direction; null value
 - [ ] All 15 buttons identified, including whether the ROG/Guide button is reported at all
-- [ ] Rear buttons: reported as their own buttons, or do they mirror others (remapped in firmware)?
+- [ ] M1–M4: own bits, copies of the assigned button, or silent (see [Programmable back buttons](#programmable-back-buttons-m1m4))
 - [ ] Idle behavior: continuous streaming or on-change; report interval (median, p95)
 - [ ] Output reports in the descriptor (rumble? LEDs?), for later
 

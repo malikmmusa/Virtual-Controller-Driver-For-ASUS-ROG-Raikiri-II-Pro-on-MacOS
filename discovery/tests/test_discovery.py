@@ -13,7 +13,7 @@ from contextlib import redirect_stdout
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 
 from hid_descriptor import DescriptorError, format_fields, format_items, parse_descriptor, parse_items  # noqa: E402
-from mapping import Baseline, PressRecorder, decode  # noqa: E402
+from mapping import Baseline, PressRecorder, decode, summary_notes  # noqa: E402
 import raikiri_probe  # noqa: E402
 
 # A plausible generic gamepad: report ID 1, 4 stick axes, hat, 15 buttons,
@@ -171,6 +171,28 @@ class MappingTests(unittest.TestCase):
         rec.feed(pressed, 0.2)
         self.assertEqual(rec.feed(rest, 0.45), "pressed")
         self.assertEqual(rec.feed(rest, 0.8), "released")
+
+
+class SummaryNoteTests(unittest.TestCase):
+    @staticmethod
+    def hit(key, peak=1):
+        return {"fields": [{"key": key, "peak": peak}]}
+
+    def test_firmware_remapped_back_button(self):
+        results = {"A": self.hit("I1@40+1"), "M1": self.hit("I1@40+1"), "M2": self.hit("I1@53+1")}
+        notes = summary_notes(results, {"I1@40+1": "Button 1", "I1@53+1": "Button 14"})
+        self.assertEqual(len(notes), 1)
+        self.assertIn("M1 sent exactly what A sends", notes[0])
+
+    def test_silent_back_buttons_and_unused_fields(self):
+        results = {"A": self.hit("I1@40+1"), "M3": {"skipped": True}, "M4": {"skipped": True}}
+        notes = summary_notes(results, {"I1@40+1": "Button 1", "I1@54+1": "Button 15"})
+        self.assertIn("M3, M4 sent nothing", notes[0])
+        self.assertIn("never moved: Button 15", notes[1])
+
+    def test_ordinary_duplicates(self):
+        notes = summary_notes({"A": self.hit("k"), "B": self.hit("k")}, {"k": "Button 1"})
+        self.assertIn("A, B produced the same field", notes[0])
 
 
 class CliTests(unittest.TestCase):

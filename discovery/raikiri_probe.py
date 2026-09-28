@@ -35,7 +35,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from hid_descriptor import Descriptor, DescriptorError, format_fields, format_items, parse_descriptor  # noqa: E402
 from hid_usages import page_name, usage_name  # noqa: E402
-from mapping import DEFAULT_CONTROLS, Baseline, PressRecorder, decode  # noqa: E402
+from mapping import DEFAULT_CONTROLS, Baseline, PressRecorder, decode, summary_notes  # noqa: E402
 
 DEFAULT_VID = 0x0B05   # ASUSTek
 DEFAULT_PID = 0x1C66   # "RAIKIRI II PRO PC" (wireless)
@@ -483,7 +483,6 @@ def print_summary(results: Dict[str, dict], fields) -> None:
     print("\n" + Style.bold("Mapping summary (paste into docs/raikiri-mapping.md)") + "\n")
     print("| Control | Field | Report/bit | Rest | Pressed | Also changes |")
     print("|---|---|---|---|---|---|")
-    owners: Dict[Tuple[str, int], List[str]] = {}
     for cid, r in results.items():
         if r.get("skipped"):
             print(f"| {cid} | *(skipped)* | | | | |")
@@ -493,11 +492,8 @@ def print_summary(results: Dict[str, dict], fields) -> None:
         also = "; ".join(f"{x['name']}={x['peak']}" for x in r["fields"][1:])
         print(f"| {cid} | {p['name']} | {p['key']} | {f.describe_value(p['rest'])} | "
               f"{f.describe_value(p['peak'])} | {also} |")
-        owners.setdefault((p["key"], p["peak"]), []).append(cid)
-    dupes = [ids for ids in owners.values() if len(ids) > 1]
-    for ids in dupes:
-        print(f"\nnote: {', '.join(ids)} produced the same primary field and value; "
-              "they are indistinguishable (or one was pressed by mistake).")
+    for note in summary_notes(results, {k: f.name for k, f in fields.items()}):
+        print(f"\nnote: {note}")
 
 
 # ------------------------------------------------------------------------ main

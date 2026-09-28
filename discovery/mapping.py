@@ -169,8 +169,54 @@ DEFAULT_CONTROLS: List[Tuple[str, str]] = [
     ("RSRight", "Right stick fully RIGHT"),
     ("RSUp", "Right stick fully UP"),
     ("RSDown", "Right stick fully DOWN"),
-    ("Rear1", "Rear/back paddle #1 (if present)"),
-    ("Rear2", "Rear/back paddle #2 (if present)"),
+    # Programmable back buttons. The firmware may send them as their own
+    # buttons, as a copy of whatever button they're assigned to, or not at all.
+    ("M1", "M1 back button (wait to skip if absent)"),
+    ("M2", "M2 back button (wait to skip if absent)"),
+    ("M3", "M3 back button (wait to skip if absent)"),
+    ("M4", "M4 back button (wait to skip if absent)"),
     ("Extra1", "Any other button (e.g. mode/menu/mute), or wait to skip"),
     ("Extra2", "Any other button, or wait to skip"),
 ]
+
+
+def is_programmable(control_id: str) -> bool:
+    return control_id.startswith("M") and control_id[1:].isdigit()
+
+
+def summary_notes(results: Dict[str, dict], field_names: Dict[str, str]) -> List[str]:
+    """Explain what the mapping says about duplicate, silent and unused inputs.
+
+    `results` is the per-control dict written to the JSON file; `field_names`
+    maps every non-padding input field key to its name.
+    """
+    notes: List[str] = []
+    owners: Dict[Tuple[str, int], List[str]] = {}
+    for cid, r in results.items():
+        if not r.get("skipped"):
+            p = r["fields"][0]
+            owners.setdefault((p["key"], p["peak"]), []).append(cid)
+    for ids in owners.values():
+        if len(ids) < 2:
+            continue
+        m = [c for c in ids if is_programmable(c)]
+        others = [c for c in ids if not is_programmable(c)]
+        if m and others:
+            notes.append(f"{', '.join(m)} sent exactly what {', '.join(others)} sends. The controller remaps "
+                         "it in firmware, so the Mac can't tell them apart. Reassigning it on the controller "
+                         "works without changing our table, but we can't give it its own function on the Mac.")
+        else:
+            notes.append(f"{', '.join(ids)} produced the same field and value; they are indistinguishable "
+                         "(or one was pressed by mistake).")
+    silent = [c for c, r in results.items() if r.get("skipped") and is_programmable(c)]
+    if silent:
+        it, was, has = ("they", "weren't", "have them") if len(silent) > 1 else ("it", "wasn't", "have it")
+        notes.append(f"{', '.join(silent)} sent nothing. Either {it} {was} pressed, the controller doesn't "
+                     f"{has}, or the current profile leaves {'them' if len(silent) > 1 else 'it'} unassigned "
+                     "(the firmware sends no data).")
+    touched = {f["key"] for r in results.values() if not r.get("skipped") for f in r["fields"]}
+    unused = [name for key, name in field_names.items() if key not in touched]
+    if unused:
+        notes.append(f"Declared in the descriptor but never moved: {', '.join(unused)}. These may be "
+                     "unprompted controls, spare slots, or back buttons in a different profile.")
+    return notes

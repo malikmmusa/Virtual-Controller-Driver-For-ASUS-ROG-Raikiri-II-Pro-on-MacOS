@@ -47,10 +47,15 @@ Field keys are `I<report id>@<bit offset>+<bit size>`, as printed by the tool.
 | RSRight | | | | | |
 | RSUp | | | | | |
 | RSDown | | | | | |
-| Rear1 | | | | | |
-| Rear2 | | | | | |
+| M1 | | | | | |
+| M2 | | | | | |
+| M3 | | | | | |
+| M4 | | | | | |
 
 ## Observations
+
+*Record which controller profile was active and what each M button was
+assigned to during the capture.*
 
 *Notes on quirks: axis polarity, trigger/button overlap, dead zones, fields
 that never change, and so on.*

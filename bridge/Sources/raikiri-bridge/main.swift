@@ -177,12 +177,12 @@ func runBridge(_ o: Options) -> Never {
     device.onDisconnect = { say("Disconnected. Waiting for the controller to come back...") }
     device.onReport = { bridge.handle($0, kernelTime: $1) }
 
+    say(String(format: "Waiting for controller %04X:%04X. Ctrl-C to stop.", o.vid, o.pid))
     let result = device.start(seize: o.seize)
     if result != kIOReturnSuccess {
         say(String(format: "warning: IOHIDManagerOpen returned 0x%08X%@", result,
                    o.seize ? " (seize may need the device to be free: quit apps using it)" : ""))
     }
-    say(String(format: "Waiting for controller %04X:%04X. Ctrl-C to stop.", o.vid, o.pid))
 
     var timer: DispatchSourceTimer?
     if o.statsEvery > 0 {
@@ -227,8 +227,8 @@ func runRumble(_ o: Options) -> Never {
             }
         }
     }
-    _ = device.start(seize: false)
     say("Waiting for the controller...")
+    _ = device.start(seize: false)
     DispatchQueue.main.asyncAfter(deadline: .now() + 10) {
         if !sent { fail("controller not found within 10 s") }
     }

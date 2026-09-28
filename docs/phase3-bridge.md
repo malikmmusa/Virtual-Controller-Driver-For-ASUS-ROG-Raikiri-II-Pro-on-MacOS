@@ -82,8 +82,11 @@ lines come from the CLT lacking Xcode's test frameworks and are harmless.
   a busy-loop estimate would suggest. Reports arrive after ~30 ms of idle,
   so the core and our thread have to wake up; that's typical on Apple
   Silicon and still small.
-- **Rumble:** not verified by feel, because vibration is disabled on this
-  controller. Game rumble forwarding is optional for Phase 4.
+- **Rumble:** `raikiri-bridge rumble` sent `03 0F 00 00 3C 1E 3C 00 00`
+  (grips) and `03 0F 50 50 00 00 3C 00 00` (triggers), and IOKit accepted
+  both, plus the stop packets. So the output path to the controller works.
+  Not verified by feel, because vibration is disabled on this controller.
+  Game rumble forwarding is optional for Phase 4.
 
 ## Build and run (on the Mac)
 

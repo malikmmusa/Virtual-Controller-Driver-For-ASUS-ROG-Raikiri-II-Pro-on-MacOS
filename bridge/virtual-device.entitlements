@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- Lets the process create a virtual HID device through Core HID.
+	     Restricted: macOS honors it only with an Apple-issued provisioning
+	     profile, or while AMFI enforcement is off (Phase 4, step A). -->
+	<key>com.apple.developer.hid.virtual.device</key>
+	<true/>
+</dict>
+</plist>

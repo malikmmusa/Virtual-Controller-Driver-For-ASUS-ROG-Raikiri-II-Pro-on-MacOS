@@ -157,3 +157,13 @@ final class ChangesTests: XCTestCase {
         XCTAssertEqual(Changes.describe(from: b, to: b), [])
     }
 }
+
+final class XboxIdentityTests: XCTestCase {
+    func testDescriptorIsTheCapturedOne() {
+        let d = XboxIdentity.reportDescriptor
+        XCTAssertEqual(d.count, 283)
+        XCTAssertEqual(Array(d.prefix(8)), [0x05, 0x01, 0x09, 0x05, 0xA1, 0x01, 0x85, 0x01])  // Game Pad, report 1
+        XCTAssertEqual(Array(d.suffix(2)), [0xC0, 0xC0])
+        XCTAssertEqual(XboxIdentity.productID, 0x0B13)
+    }
+}

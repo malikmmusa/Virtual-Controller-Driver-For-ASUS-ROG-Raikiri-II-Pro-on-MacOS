@@ -22,6 +22,9 @@ let usage = """
       --quiet            Don't print input changes; statistics only.
       --stats SECONDS    How often to print statistics (default 10, 0 = only at exit).
       --seize            Open the controller exclusively (other apps stop seeing it).
+      --virtual          Phase 4: also present a virtual Xbox Series X|S controller
+                         (045E:0B13) fed by the bridge. Needs the virtual HID
+                         entitlement; see docs/phase4-virtual-device.md.
 
     rumble options:
       --strong N  --weak N  --lt N  --rt N     Motor strengths, 0-100 (defaults 60, 30, 0, 0)
@@ -38,6 +41,7 @@ struct Options {
     var quiet = false
     var statsEvery = 10.0
     var seize = false
+    var virtual = false
     var strong: UInt8 = 60, weak: UInt8 = 30, lt: UInt8 = 0, rt: UInt8 = 0
     var ms = 600
     var vid = 0x0B05
@@ -64,6 +68,7 @@ func parseOptions(_ args: [String]) -> Options {
         case "--quiet": o.quiet = true
         case "--stats": o.statsEvery = Double(value()) ?? 10
         case "--seize": o.seize = true
+        case "--virtual": o.virtual = true
         case "--strong": o.strong = percent(value())
         case "--weak": o.weak = percent(value())
         case "--lt": o.lt = percent(value())
@@ -118,6 +123,44 @@ final class NullSink: ReportSink {
     func deliver(_ report: UnsafeBufferPointer<UInt8>) {}
 }
 
+/// Delivers each report to several sinks, in order.
+final class MultiSink: ReportSink {
+    let sinks: [ReportSink]
+    init(_ sinks: [ReportSink]) { self.sinks = sinks }
+    func deliver(_ report: UnsafeBufferPointer<UInt8>) {
+        for sink in sinks { sink.deliver(report) }
+    }
+}
+
+/// Forwards rumble from the virtual controller (games) to the Raikiri, at most
+/// one packet per 50 ms, always the newest (see RumbleCoalescer).
+final class RumbleForwarder {
+    private let queue = DispatchQueue(label: "raikiri.rumble")
+    private var coalescer = RumbleCoalescer()
+    private let device: RaikiriDevice
+
+    init(device: RaikiriDevice) { self.device = device }
+
+    func submit(_ bytes: [UInt8]) {
+        guard let rumble = try? Rumble(report: bytes) else { return }
+        queue.async {
+            let now = MachClock.nanos(MachClock.now())
+            switch self.coalescer.submit(rumble, at: now) {
+            case .sendNow(let r):
+                self.device.sendOutputReport(r.report())
+            case .sendAt(let time):
+                self.queue.asyncAfter(deadline: .now() + .nanoseconds(Int(time &- now))) {
+                    if let r = self.coalescer.due(at: MachClock.nanos(MachClock.now())) {
+                        self.device.sendOutputReport(r.report())
+                    }
+                }
+            case .alreadyScheduled:
+                break
+            }
+        }
+    }
+}
+
 // MARK: - Bridge
 
 /// The input path: timestamp, translate, deliver. Runs on the device's input
@@ -138,10 +181,10 @@ final class Bridge {
     }
 
     func handle(_ report: UnsafeMutableBufferPointer<UInt8>, kernelTime: UInt64) {
-        let start = Clock.now()
+        let start = MachClock.now()
         let received = kernelTime != 0 ? kernelTime : start
-        if start >= received { delivery.add(Clock.nanos(start - received)) }
-        if let last = lastKernelTime, received > last { interval.add(Clock.nanos(received - last)) }
+        if start >= received { delivery.add(MachClock.nanos(start - received)) }
+        if let last = lastKernelTime, received > last { interval.add(MachClock.nanos(received - last)) }
         lastKernelTime = received
         sinceLastPrint += 1
 
@@ -152,7 +195,7 @@ final class Bridge {
             return
         }
         sink.deliver(UnsafeBufferPointer(report))
-        processing.add(Clock.nanos(Clock.now() - start))
+        processing.add(MachClock.nanos(MachClock.now() - start))
     }
 
     /// Call on the input queue.
@@ -172,7 +215,22 @@ final class Bridge {
 
 func runBridge(_ o: Options) -> Never {
     let device = RaikiriDevice(vendorID: o.vid, productID: o.pid)
-    let bridge = Bridge(device: device, sink: o.quiet ? NullSink() : ConsoleSink())
+    var sinks: [ReportSink] = []
+    if o.virtual {
+        let rumble = RumbleForwarder(device: device)
+        guard let xbox = VirtualXboxSink(onOutputReport: { rumble.submit($0) }) else {
+            fail("""
+                the system refused to create the virtual controller.
+                This process needs the com.apple.developer.hid.virtual.device entitlement,
+                and macOS must accept it. See docs/phase4-virtual-device.md.
+                """)
+        }
+        sinks.append(xbox)
+        say("Virtual controller created: \(XboxIdentity.product) " +
+            String(format: "%04X:%04X", XboxIdentity.vendorID, XboxIdentity.productID))
+    }
+    if !o.quiet { sinks.append(ConsoleSink()) }
+    let bridge = Bridge(device: device, sink: MultiSink(sinks))
     device.onConnect = { say("Connected: \($0)") }
     device.onDisconnect = { say("Disconnected. Waiting for the controller to come back...") }
     device.onReport = { bridge.handle($0, kernelTime: $1) }

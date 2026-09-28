@@ -102,7 +102,7 @@ final class RaikiriDevice {
 
 /// mach_absolute_time() ticks to nanoseconds. On Apple Silicon one tick is
 /// 125/3 ns; on Intel it's 1 ns.
-enum Clock {
+enum MachClock {
     static let timebase: mach_timebase_info_data_t = {
         var info = mach_timebase_info_data_t()
         mach_timebase_info(&info)

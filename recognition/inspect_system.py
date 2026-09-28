@@ -276,8 +276,16 @@ LOG_PATTERN = re.compile(
     r"\bvid\b|\bpid\b|vendor ?id|product ?id", re.I)
 
 
+# Account and device identifiers that GeForce NOW writes into its logs.
+_ID_FIELDS = re.compile(r'("?(?:userId|deviceId|clientId|sessionId|idpId|email)"?\s*[:=]\s*"?)([^",\s}]+)', re.I)
+
+
+def scrub(line: str) -> str:
+    return _ID_FIELDS.sub(lambda m: m.group(1) + "<masked>", line)
+
+
 def grep_tail(text: str, pattern: re.Pattern, limit: int) -> List[str]:
-    return [line[:300] for line in text.splitlines() if pattern.search(line)][-limit:]
+    return [scrub(line)[:300] for line in text.splitlines() if pattern.search(line)][-limit:]
 
 
 def inspect_gfn() -> str:

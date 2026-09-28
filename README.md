@@ -14,7 +14,7 @@ for now.
 | Phase | What | Status |
 |---|---|---|
 | 1 | **Discovery:** dump the HID report descriptor and live reports; build a control → field mapping table | Done. Over Bluetooth the Raikiri already sends Xbox Series-format reports under ASUS's VID/PID: [docs/raikiri-mapping.md](docs/raikiri-mapping.md) |
-| 2 | **Verify the hypothesis:** what makes GameController recognize a device as an Xbox controller (VID/PID, descriptor, transport) | Research done; experiments ready: [docs/phase2-recognition.md](docs/phase2-recognition.md) |
+| 2 | **Verify the hypothesis:** what makes GameController recognize a device as an Xbox controller (VID/PID, descriptor, transport) | Confirmed: an IOKit allowlist keyed on VID/PID; `045E:0B13` allows virtual devices. Testing a driverless SDL-mapping fix for GeForce NOW: [docs/phase2-recognition.md](docs/phase2-recognition.md) |
 | 3 | **Userspace daemon:** read the Raikiri via IOHIDManager and translate reports to Xbox format with minimal latency | Not started |
 | 4 | **Virtual device:** a DriverKit virtual HID device presenting the translated reports as an Xbox controller (signing, entitlements, and the dev-mode path explained before touching any security settings) | Not started |
 
@@ -30,6 +30,9 @@ discovery/
 recognition/
   gc_probe.swift       lists what Apple's GameController framework accepts
   inspect_system.py    read-only report: IORegistry, Bluetooth, allowlist, GeForce NOW
+  sdl_probe.py         shows the Raikiri as SDL (inside GeForce NOW) sees it
+  raikiri_sdl_mapping.txt   SDL controller mapping for the Raikiri
+  launch_gfn_with_mapping.sh   starts GeForce NOW with that mapping
   tests/               python3 -m unittest discover -s recognition/tests
 docs/
   phase1-discovery.md  HID background, setup, and step-by-step instructions

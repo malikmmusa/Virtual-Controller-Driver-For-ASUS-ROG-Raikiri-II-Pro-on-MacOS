@@ -123,6 +123,14 @@ class StringAndLogTests(unittest.TestCase):
         self.assertEqual(lines, ["GCDevice init", "gamepad removed"])
         self.assertNotIn("provider started", ins.grep_tail(log, ins.LOG_PATTERN, 10))
 
+    def test_account_ids_are_scrubbed(self):
+        line = ('INFO events request {"clientId":"78589","deviceId":"a34d41","userId":"9nQJ",'
+                '"gamepad":"x"} email=someone@example.com')
+        out = ins.grep_tail(line, ins.LOG_PATTERN, 5)[0]
+        for secret in ("78589", "a34d41", "9nQJ", "someone@"):
+            self.assertNotIn(secret, out)
+        self.assertIn('"gamepad":"x"', out)
+
     def test_mask(self):
         self.assertEqual(ins.mask("abc"), "abc")
         self.assertTrue(re.fullmatch(r"x+:x+:x+:x+:x+:66", ins.mask("11:22:33:44:55:66")))

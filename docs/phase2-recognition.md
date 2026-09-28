@@ -110,9 +110,9 @@ then.
 | # | Hypothesis | Status | How we test it |
 |---|---|---|---|
 | H1 | Apple's GameController framework ignores the Raikiri | **Confirmed** by Experiment 2 | Experiments 1–2 |
-| H2 | Its allowlist is keyed on identity (vendor/product ID, maybe name), not the report format | Likely: the format already matches Xbox | Experiment 3; Phase 4 |
-| H3 | A virtual device with Xbox Series identity (`045E:0B13`), the Xbox descriptor and a non-virtual transport is accepted as an Xbox controller | Plausible: the DualSense/DualShock 4 projects above | Phase 4, first test |
-| H4 | GeForce NOW's native app accepts whatever GameController accepts as Xbox, or opens it via its HID backend | Unknown: one negative report, one positive (DualSense) | Experiment 4 now; Phase 4 end-to-end |
+| H2 | Its allowlist is keyed on identity (vendor/product ID, maybe name), not the report format | **Confirmed:** the allowlist is IOKit personalities that match on VendorID + ProductID (Experiment 3) | Experiment 3 |
+| H3 | A virtual device with Xbox Series identity (`045E:0B13`) and the Xbox descriptor is accepted as an Xbox controller | **Strongly supported:** Apple's personality for `045E:0B13` is marked `GCIOMatchVirtual = true` | Phase 4, first test |
+| H4 | GeForce NOW's native app accepts whatever GameController accepts as Xbox, or opens it via its HID backend | Partly answered: GFN uses the framework *and* SDL2 with SDL's controller database; it listed 0 gamepads | Experiment 6; Phase 4 end-to-end |
 
 ## Experiments
 
@@ -189,30 +189,143 @@ log stream --style compact --predicate 'process == "gamecontrollerd"'
 
 Turn the controller off and on while it runs, then press Ctrl-C.
 
-## Results so far
+## Results
 
 Recorded on macOS "Version 27.0 (Build 26A428)", with the Raikiri connected
-over Bluetooth.
+over Bluetooth. Sections 1–3 of the inspector report are in
+[captures/phase2-report-excerpt.txt](captures/phase2-report-excerpt.txt).
 
-| Experiment | Result | Meaning |
+| Experiment | Result |
+|---|---|
+| 0: GeForce NOW in Chrome | **Doesn't work**, although a Gamepad API tester in the same browser does. Chrome reports the Raikiri with mapping "n/a"; GFN's web client apparently needs `mapping == "standard"`, which Chrome grants from its own list of known IDs. |
+| 1: System Settings | The Raikiri is listed both in Bluetooth and on the **Game Controllers** page. |
+| 2: `gc_probe.swift` | `GCController.controllers(): 0 controller(s)`. Apps get nothing. |
+| 3–5: `inspect_system.py` | See the findings below. |
+
+### Finding A: the allowlist, on disk
+
+`/System/Library/Extensions/AppleGameControllerPersonality.kext` holds the
+allowlist as **IOKit personalities**. Each one matches an `IOHIDInterface` by
+`VendorID` + `ProductID`, and binds Apple's game controller driver
+(`AppleGCHIDUserEventDriver`, `IOProbeScore` 1000) with a
+`GameControllerCategory` such as `"xbox"`. Microsoft entries include:
+
+| Personality | VID:PID | `GCIOMatchVirtual` |
 |---|---|---|
-| 0: GeForce NOW in Chrome | **Doesn't work.** A Gamepad API tester in the same browser does. | Chrome reports the Raikiri with mapping "n/a" (non-standard). GFN's web client apparently requires `mapping == "standard"`, which Chrome grants from its own list of known vendor/product IDs. It's identity-based again, and not a stopgap. |
-| 1: System Settings | Shows the controller connected as a gamepad | To confirm: Bluetooth's device list, or a Game Controllers page? The Bluetooth type alone doesn't mean the framework accepted it. |
-| 2: `gc_probe.swift` | `GCController.controllers(): 0 controller(s)`, with no connect events | **H1 confirmed:** Apple's GameController framework doesn't accept the Raikiri, although the HID device is present. One caveat: we haven't yet shown the probe detecting a supported controller from a terminal. |
-| 3–5: `inspect_system.py` | Pending | |
+| Xbox Series X Wireless Controller | `045E:0B13` | **true** |
+| Xbox Series X Wireless Controller 2 | `045E:0B23` | true |
+| Xbox Wireless Controller BLE (One S) | `045E:0B20` | true |
+| Xbox Wireless Controller (One S, Classic BT) | `045E:02FD`, `045E:02E0` | true |
+| Xbox Elite V2 (BT/BLE) | `045E:0B05`, `0B22`, `0B3C`, `0B02` | true |
+| Xbox Series X Wired, Xbox Wired, Xbox 360, Elite V2 USB | `0B12`, `02EA`, `028E`, `0B00` | *absent* |
+| Xbox Adaptive Controller | `0B0C`, `0B21` | absent |
 
-## What the results will mean
+Wired Xbox controllers use a separate DriverKit driver,
+`/System/Library/DriverExtensions/XboxGamepad.dext`, which speaks the USB
+protocol and then presents a HID device.
 
-- **The Raikiri isn't recognized (expected), and GFN's log shows it sees the
-  device but skips it:** the plan stands. Phase 3 reads the Raikiri; Phase 4
-  presents it as `045E:0B13`. Phase 4's first milestone is an end-to-end test
-  in GeForce NOW before any polishing.
-- **Experiment 0 works well:** you have a working stopgap today, and the
-  native-app project can continue without pressure.
-- **Experiment 3 finds an allowlist plist:** we learn exactly which fields
-  are matched, which tells Phase 4 what to copy.
-- **The Raikiri *is* recognized:** the problem is only in GeForce NOW, and the
-  plan changes to focus on GFN's own backend.
+This confirms H2: recognition is by vendor/product ID. The report format
+isn't checked at matching time.
+
+The `GCIOMatchVirtual` key is almost certainly the "checks to ignore virtual
+HID devices" Apple mentioned. Every device carries a `HIDVirtualDevice`
+property, and the Raikiri's is `false`. Apple's driver apparently refuses
+devices with `HIDVirtualDevice = true` unless the matching personality sets
+`GCIOMatchVirtual`. The Bluetooth wireless Xbox entries, including our
+target `045E:0B13`, do set it. That's a strong sign a virtual Xbox Series
+controller is allowed by design. It's inferred from the key name; Phase 4's
+first test confirms it.
+
+### Finding B: what a real Bluetooth controller looks like to macOS
+
+The Raikiri's IORegistry entry (masked in the capture) shows what our
+virtual device should imitate:
+
+- Class `IOHIDUserDevice`: Bluetooth LE HID devices are user-space HID
+  devices created by the Bluetooth stack, with `HIDVirtualDevice = false`.
+- `Transport = "Bluetooth Low Energy"` (Real Xbox Series controllers are BLE too.)
+- `VersionNumber = 0x0509` (firmware 5.9, the Xbox Series BT firmware line),
+  `ReportInterval = 8000` µs, `MaxInputReportSize = 17`, `MaxOutputReportSize = 9`.
+- `GameControllerSupportedHIDDevice = false`, and the generic
+  `AppleUserHIDEventDriver` attached instead of Apple's game controller driver.
+
+### Finding C: macOS 27 "sees" generic gamepads, but doesn't give them to apps
+
+gamecontrollerd logs `[Generic Device Manager] Matched Kernel Service vendorID
+= 2821, productID = 7270 ... 'RAIKIRI II PRO PC'`. That's why the Game
+Controllers settings page lists it. But no `GCController` reaches apps
+(Experiment 2, and GFN's own session). Generic support appears limited to
+the system's own use.
+
+### Finding D: how GeForce NOW reads controllers
+
+`libGeronimo.dylib` (GFN 2.0.88.129) links **both**
+`GameController.framework` and the bundled **SDL2.framework**, and contains:
+
+- `Enabled GameController.framework backend`, and `Not handling device %p via
+  HID because GameController will take it.`: devices Apple accepts go through
+  the framework; everything else goes through GFN's HID/SDL path.
+- An embedded copy of the **SDL_GameControllerDB** (`# Source:
+  https://github.com/mdqinc/SDL_GameControllerDB`) with hundreds of mappings.
+  SDL only calls a device a "game controller" if it has a mapping there.
+- Its log reported `connectedGamepadInfoList: []`: neither path accepted the
+  Raikiri.
+
+That suggests a **driverless fix for GeForce NOW specifically**. SDL reads
+extra mappings from the `SDL_GAMECONTROLLERCONFIG` environment variable, so
+we can give GFN's SDL a mapping for the Raikiri. See Experiment 6.
+
+### Experiment 6: an SDL mapping for GeForce NOW (no driver)
+
+[`recognition/raikiri_sdl_mapping.txt`](../recognition/raikiri_sdl_mapping.txt)
+is derived from SDL2's macOS IOKit backend (`SDL_iokitjoystick.c`):
+
+- **GUID** `03000000050b0000661c000009050000`: bus USB (that backend always
+  uses USB), vendor `0B05`, product `1C66`, version `0509`, name CRC left 0.
+  SDL retries without the CRC, and a second line with version 0 covers
+  SDL's retry that ignores the version.
+- **Numbering**: SDL sorts elements by HID usage number. So HID buttons
+  1–15 become b0–b14 and Share (Consumer Record) becomes b15. Axes become
+  X a0, Y a1, Z a2, Rz a3, Accelerator (RT) a4, Brake (LT) a5, and the hat
+  is h0. That's the same shape as SDL's own mappings for Xbox Bluetooth
+  controllers on macOS.
+
+It's verified against real SDL 2.32. The GUID decodes to `0B05:1C66`
+version `0509`, and a virtual joystick numbered this way yields the right
+Xbox controls (`recognition/tests/test_sdl_mapping.py`).
+
+To try it on the Mac:
+
+```bash
+cd ~/raikiri/recognition
+../discovery/.venv/bin/pip install pysdl2 pysdl2-dll
+../discovery/.venv/bin/python sdl_probe.py        # does SDL call it a game controller now?
+./launch_gfn_with_mapping.sh                      # GFN with the mapping; quit GFN to undo
+```
+
+`sdl_probe.py` should show "game controller: YES" after the mapping is added,
+and name each control as you press it. If `launch_gfn_with_mapping.sh` makes
+the controller work in a game, GeForce NOW is solved without any driver.
+The general fix (other apps, and Apple's framework) is still Phases 3–4.
+
+## Conclusions
+
+1. **The hypothesis is confirmed, with the exact mechanism.** Apple's
+   framework binds its game controller driver through IOKit personalities
+   keyed on vendor/product ID. The Raikiri's `0B05:1C66` isn't listed, so it
+   gets the generic HID driver and apps never see a `GCController`.
+2. **Phase 4's target is `045E:0B13`**, the Xbox Series X Wireless
+   Controller. Its personality allows virtual devices (`GCIOMatchVirtual`),
+   and the Raikiri already produces that controller's exact report format.
+   So the virtual device can reuse the Raikiri's own descriptor, and the
+   Phase 3 daemon can forward reports almost unchanged.
+3. **GeForce NOW may not need any of that.** Its SDL path accepts any
+   controller with a mapping. Experiment 6 tests a zero-install fix before
+   anything needing signing or security changes.
+
+Next: run Experiment 6. If it works, you can play GeForce NOW right away,
+and Phases 3–4 become about other apps and Apple's framework. If it doesn't,
+GFN's log will say more, and Phase 3 starts as planned.
 
 [sdl-list]: https://github.com/libsdl-org/SDL/blob/main/src/joystick/controller_list.h
 [apple-list]: https://developer.apple.com/forums/thread/763679

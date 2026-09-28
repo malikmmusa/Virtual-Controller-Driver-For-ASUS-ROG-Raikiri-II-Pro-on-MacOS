@@ -1,0 +1,124 @@
+# Excerpts from recognition/inspect_system.py on macOS 27.0 (26A428), Raikiri II Pro over Bluetooth.
+# Sections 1-3 verbatim (serials/addresses masked by the tool). GFN account logs omitted.
+
+==============================================================================
+System
+==============================================================================
+ProductName:		macOS
+ProductVersion:		27.0
+BuildVersion:		26A428
+arm64
+
+==============================================================================
+1. Controller-like HID devices (ioreg)
+==============================================================================
+--- RAIKIRI II PRO PC  [IOHIDUserDevice]
+    CountryCode = 0
+    DeviceAddress = "xx-xx-xx-xx-xx-5f" (masked)
+    DeviceOpenedByEventSystem = true
+    DeviceUsagePairs = [{DeviceUsage=5, DeviceUsagePage=1}, {DeviceUsage=1, DeviceUsagePage=1}]
+    GameControllerSupportedHIDDevice = false
+    HIDDefaultBehavior = true
+    HIDRMDeviceState = "Unknown"
+    HIDVirtualDevice = false
+    IOGeneralInterest = "IOCommand is not serializable"
+    IOObjectClass = "IOHIDUserDevice"
+    IOObjectRetainCount = 13 (0xD)
+    IORegistryEntryID = 4296254603 (0x10013A48B)
+    IORegistryEntryName = "IOHIDUserDevice"
+    IOReportLegend = [{IOReportChannelInfo={IOReportChannelUnit=0}, IOReportChannels=[[1, 4295098369 (0x100020001), "Report 1"], [3, 4295098369 (0x100020001), "Report 3"]], IOReportGroupName="IOHIDDevice Input Report Errors", IOReportSubGroupName="Input Report IDs"}]
+    IOReportLegendPublic = true
+    IOServiceBusyState = 0
+    IOServiceBusyTime = 14916958 (0xE39D5E)
+    IOServiceState = 30 (0x1E)
+    IOUserClientClass = "IOHIDLibUserClient"
+    LocationID = 183923239 (0xAF67227)
+    Manufacturer = "ASUSTeK"
+    MaxFeatureReportSize = 1
+    MaxInputReportSize = 17 (0x11)
+    MaxOutputReportSize = 9
+    ModelNumber = "RAIKIRI II PRO PC"
+    PhysicalDeviceUniqueID = "2772F60A-CB15-BAE7-C3B5-3D19BE62A659"
+    PrimaryUsage = 5
+    PrimaryUsagePage = 1
+    Privileged = true
+    Product = "RAIKIRI II PRO PC"
+    ProductID = 7270 (0x1C66)
+    RegisterService = false
+    ReportInterval = 8000 (0x1F40)
+    RequestTimeout = 30000000 (0x1C9C380)
+    SerialNumber = "xxxxxx xxxxxx xxst" (masked)
+    Transport = "Bluetooth Low Energy"
+    VendorID = 2821 (0xB05)
+    VendorIDSource = 2
+    VersionNumber = 1289 (0x509)
+    kBTHardwareRevisionKey = "v00.00.01"
+    ReportDescriptor = <283 bytes> 05 01 09 05 a1 01 85 01 09 01 a1 00 09 30 09 31 ...
+    Objects attached below it (driver stack):
+      IOHIDInterface [IOHIDInterface]
+        AppleUserHIDEventDriver [AppleUserHIDEventService] IOUserClass=AppleUserHIDEventDriver CFBundleIdentifier=com.apple.AppleUserHIDDrivers IOClass=AppleUserHIDEventService
+          IOHIDEventServiceUserClient [IOHIDEventServiceUserClient]
+      IOHIDLibUserClient [IOHIDLibUserClient]
+
+
+==============================================================================
+2. Bluetooth details (system_profiler)
+==============================================================================
+          RAIKIRI II PRO PC:
+              Address: xx:xx:xx:xx:xx:5F (masked)
+              Vendor ID: 0x0B05
+              Product ID: 0x1C66
+              Minor Type: Gamepad
+              Services: 0x400020 < HID BLE >
+
+==============================================================================
+3. System plists that mention Microsoft's vendor ID (0x045E)
+==============================================================================
+/System/Library/Extensions/AppleStorageDrivers.kext/Contents/PlugIns/USBStorageDeviceSpecifics.kext/Contents/Info.plist  /IOKitPersonalities/AppleMagellanMaestro4250_65535
+    {CFBundleIdentifier="com.apple.iokit.IOUSBMassStorageDriver", IOClass="IOUSBMassStorageDriver", IOProviderClass="IOUSBMassStorageDriverNub", Physical Interconnect="USB", Physical Interconnect Location="External", bConfigurationValue=1, bInterfaceNumber=0, idProduct=65535 (0xFFFF), idVendor=1118 (0x45E)}
+/System/Library/Extensions/AppleGameControllerPersonality.kext/Contents/Info.plist  /IOKitPersonalities/Xbox 360 Controller IOService
+    {CFBundleIdentifier="com.apple.driver.AppleGameControllerPersonality", GameControllerCategory="xbox", IOClass="AppleGCHIDUserEventDriver", IOProbeScore=1000 (0x3E8), IOProviderClass="IOHIDInterface", ProductID=654 (0x28E), VendorID=1118 (0x45E)}
+/System/Library/Extensions/AppleGameControllerPersonality.kext/Contents/Info.plist  /IOKitPersonalities/Xbox Adaptive Controller BLE IOService
+    {CFBundleIdentifier="com.apple.driver.AppleGameControllerPersonality", GameControllerCategory="xbox", IOClass="AppleGCHIDUserEventDriver", IOProbeScore=1000 (0x3E8), IOProviderClass="IOHIDInterface", ProductID=2849 (0xB21), VendorID=1118 (0x45E)}
+/System/Library/Extensions/AppleGameControllerPersonality.kext/Contents/Info.plist  /IOKitPersonalities/Xbox Adaptive Controller IOService
+    {CFBundleIdentifier="com.apple.driver.AppleGameControllerPersonality", GameControllerCategory="xbox", IOClass="AppleGCHIDUserEventDriver", IOProbeScore=1000 (0x3E8), IOProviderClass="IOHIDInterface", ProductID=2828 (0xB0C), VendorID=1118 (0x45E)}
+/System/Library/Extensions/AppleGameControllerPersonality.kext/Contents/Info.plist  /IOKitPersonalities/Xbox Elite V2 Controller 0x0b05 IOService
+    {CFBundleIdentifier="com.apple.driver.AppleGameControllerPersonality", GCIOMatchVirtual=true, GameControllerCategory="xbox", IOClass="AppleGCHIDUserEventDriver", IOProbeScore=1000 (0x3E8), IOProviderClass="IOHIDInterface", ProductID=2821 (0xB05), VendorID=1118 (0x45E)}
+/System/Library/Extensions/AppleGameControllerPersonality.kext/Contents/Info.plist  /IOKitPersonalities/Xbox Elite V2 Controller BLE IOService
+    {CFBundleIdentifier="com.apple.driver.AppleGameControllerPersonality", GCIOMatchVirtual=true, GameControllerCategory="xbox", IOClass="AppleGCHIDUserEventDriver", IOProbeScore=1000 (0x3E8), IOProviderClass="IOHIDInterface", ProductID=2850 (0xB22), VendorID=1118 (0x45E)}
+/System/Library/Extensions/AppleGameControllerPersonality.kext/Contents/Info.plist  /IOKitPersonalities/Xbox Elite V2 Controller BLE IOService 2
+    {CFBundleIdentifier="com.apple.driver.AppleGameControllerPersonality", GCIOMatchVirtual=true, GameControllerCategory="xbox", IOClass="AppleGCHIDUserEventDriver", IOProbeScore=1000 (0x3E8), IOProviderClass="IOHIDInterface", ProductID=2876 (0xB3C), VendorID=1118 (0x45E)}
+/System/Library/Extensions/AppleGameControllerPersonality.kext/Contents/Info.plist  /IOKitPersonalities/Xbox Elite V2 Controller IOService
+    {CFBundleIdentifier="com.apple.driver.AppleGameControllerPersonality", GCIOMatchVirtual=true, GameControllerCategory="xbox", IOClass="AppleGCHIDUserEventDriver", IOProbeScore=1000 (0x3E8), IOProviderClass="IOHIDInterface", ProductID=2818 (0xB02), VendorID=1118 (0x45E)}
+/System/Library/Extensions/AppleGameControllerPersonality.kext/Contents/Info.plist  /IOKitPersonalities/Xbox Elite V2 USB IOService
+    {CFBundleIdentifier="com.apple.driver.AppleGameControllerPersonality", GameControllerCategory="xbox", IOClass="AppleGCHIDUserEventDriver", IOProbeScore=1000 (0x3E8), IOProviderClass="IOHIDInterface", ProductID=2816 (0xB00), VendorID=1118 (0x45E)}
+/System/Library/Extensions/AppleGameControllerPersonality.kext/Contents/Info.plist  /IOKitPersonalities/Xbox Series X Wired Controller IOService
+    {CFBundleIdentifier="com.apple.driver.AppleGameControllerPersonality", GameControllerCategory="xbox", IOClass="AppleGCHIDUserEventDriver", IOProbeScore=1000 (0x3E8), IOProviderClass="IOHIDInterface", ProductID=2834 (0xB12), VendorID=1118 (0x45E)}
+/System/Library/Extensions/AppleGameControllerPersonality.kext/Contents/Info.plist  /IOKitPersonalities/Xbox Series X Wireless Controller IOService
+    {CFBundleIdentifier="com.apple.driver.AppleGameControllerPersonality", GCIOMatchVirtual=true, GameControllerCategory="xbox", IOClass="AppleGCHIDUserEventDriver", IOProbeScore=1000 (0x3E8), IOProviderClass="IOHIDInterface", ProductID=2835 (0xB13), VendorID=1118 (0x45E)}
+/System/Library/Extensions/AppleGameControllerPersonality.kext/Contents/Info.plist  /IOKitPersonalities/Xbox Series X Wireless Controller IOService 2
+    {CFBundleIdentifier="com.apple.driver.AppleGameControllerPersonality", GCIOMatchVirtual=true, GameControllerCategory="xbox", IOClass="AppleGCHIDUserEventDriver", IOProbeScore=1000 (0x3E8), IOProviderClass="IOHIDInterface", ProductID=2851 (0xB23), VendorID=1118 (0x45E)}
+/System/Library/Extensions/AppleGameControllerPersonality.kext/Contents/Info.plist  /IOKitPersonalities/Xbox Wired Controller IOService
+    {CFBundleIdentifier="com.apple.driver.AppleGameControllerPersonality", GameControllerCategory="xbox", IOClass="AppleGCHIDUserEventDriver", IOProbeScore=1000 (0x3E8), IOProviderClass="IOHIDInterface", ProductID=746 (0x2EA), VendorID=1118 (0x45E)}
+/System/Library/Extensions/AppleGameControllerPersonality.kext/Contents/Info.plist  /IOKitPersonalities/Xbox Wireless Controller 0x2e0 IOService
+    {CFBundleIdentifier="com.apple.driver.AppleGameControllerPersonality", GCIOMatchVirtual=true, GameControllerCategory="xbox", IOClass="AppleGCHIDUserEventDriver", IOProbeScore=1000 (0x3E8), IOProviderClass="IOHIDInterface", ProductID=736 (0x2E0), VendorID=1118 (0x45E)}
+/System/Library/Extensions/AppleGameControllerPersonality.kext/Contents/Info.plist  /IOKitPersonalities/Xbox Wireless Controller BLE IOService
+    {CFBundleIdentifier="com.apple.driver.AppleGameControllerPersonality", GCIOMatchVirtual=true, GameControllerCategory="xbox", IOClass="AppleGCHIDUserEventDriver", IOProbeScore=1000 (0x3E8), IOProviderClass="IOHIDInterface", ProductID=2848 (0xB20), VendorID=1118 (0x45E)}
+/System/Library/Extensions/AppleGameControllerPersonality.kext/Contents/Info.plist  /IOKitPersonalities/Xbox Wireless Controller IOService
+    {CFBundleIdentifier="com.apple.driver.AppleGameControllerPersonality", GCIOMatchVirtual=true, GameControllerCategory="xbox", IOClass="AppleGCHIDUserEventDriver", IOProbeScore=1000 (0x3E8), IOProviderClass="IOHIDInterface", ProductID=765 (0x2FD), VendorID=1118 (0x45E)}
+/System/Library/DriverExtensions/XboxGamepad.dext/Info.plist  /IOKitPersonalities/Xbox360Device
+    {CFBundleIdentifierKernel="com.apple.kpi.iokit", IOClass="IOUserService", IOProviderClass="IOUSBHostDevice", IOUserClass="XboxUSBDevice", IOUserServerName="com.apple.gamecontroller.driver.XboxGamepad", bDeviceClass=255 (0xFF), idProduct=654 (0x28E), idVendor=1118 (0x45E)}
+/System/Library/DriverExtensions/XboxGamepad.dext/Info.plist  /IOKitPersonalities/Xbox360Gamepad
+    {CFBundleIdentifierKernel="com.apple.kpi.iokit", IOClass="AppleUserHIDDevice", IOProviderClass="IOUSBHostInterface", IOUserClass="Xbox360Gamepad", IOUserServerName="com.apple.gamecontroller.driver.XboxGamepad", bInterfaceClass=255 (0xFF), bInterfaceProtocol=1, bInterfaceSubClass=93 (0x5D), idProduct=654 (0x28E), idVendor=1118 (0x45E)}
+/System/Library/DriverExtensions/XboxGamepad.dext/Info.plist  /IOKitPersonalities/XboxEliteV2Device
+    {CFBundleIdentifierKernel="com.apple.kpi.iokit", IOClass="IOUserService", IOProviderClass="IOUSBHostDevice", IOUserClass="XboxUSBDevice", IOUserServerName="com.apple.gamecontroller.driver.XboxGamepad", bDeviceClass=255 (0xFF), idProduct=2816 (0xB00), idVendor=1118 (0x45E)}
+/System/Library/DriverExtensions/XboxGamepad.dext/Info.plist  /IOKitPersonalities/XboxEliteV2Gamepad
+    {CFBundleIdentifierKernel="com.apple.kpi.iokit", IOClass="AppleUserHIDDevice", IOProviderClass="IOUSBHostInterface", IOUserClass="XboxEliteV2Gamepad", IOUserServerName="com.apple.gamecontroller.driver.XboxGamepad", bInterfaceClass=255 (0xFF), bInterfaceSubClass=71 (0x47), idProduct=2816 (0xB00), idVendor=1118 (0x45E)}
+/System/Library/DriverExtensions/XboxGamepad.dext/Info.plist  /IOKitPersonalities/XboxOneSDevice
+    {CFBundleIdentifierKernel="com.apple.kpi.iokit", IOClass="IOUserService", IOProviderClass="IOUSBHostDevice", IOUserClass="XboxUSBDevice", IOUserServerName="com.apple.gamecontroller.driver.XboxGamepad", bDeviceClass=255 (0xFF), idProduct=746 (0x2EA), idVendor=1118 (0x45E)}
+/System/Library/DriverExtensions/XboxGamepad.dext/Info.plist  /IOKitPersonalities/XboxOneSGamepad
+    {CFBundleIdentifierKernel="com.apple.kpi.iokit", IOClass="AppleUserHIDDevice", IOProviderClass="IOUSBHostInterface", IOUserClass="XboxOneSGamepad", IOUserServerName="com.apple.gamecontroller.driver.XboxGamepad", bInterfaceClass=255 (0xFF), bInterfaceProtocol=208 (0xD0), bInterfaceSubClass=71 (0x47), idProduct=746 (0x2EA), idVendor=1118 (0x45E)}
+/System/Library/DriverExtensions/XboxGamepad.dext/Info.plist  /IOKitPersonalities/XboxSeriesXDevice
+    {CFBundleIdentifierKernel="com.apple.kpi.iokit", IOClass="IOUserService", IOProviderClass="IOUSBHostDevice", IOUserClass="XboxUSBDevice", IOUserServerName="com.apple.gamecontroller.driver.XboxGamepad", bDeviceClass=255 (0xFF), idProduct=2834 (0xB12), idVendor=1118 (0x45E)}
+/System/Library/DriverExtensions/XboxGamepad.dext/Info.plist  /IOKitPersonalities/XboxSeriesXGamepad
+    {CFBundleIdentifierKernel="com.apple.kpi.iokit", IOClass="AppleUserHIDDevice", IOProviderClass="IOUSBHostInterface", IOUserClass="XboxSeriesXGamepad", IOUserServerName="com.apple.gamecontroller.driver.XboxGamepad", bInterfaceClass=255 (0xFF), bInterfaceSubClass=71 (0x47), idProduct=2834 (0xB12), idVendor=1118 (0x45E)}

@@ -11,11 +11,13 @@
 // If `swift` complains about the SDK, compile instead:
 //   swiftc gc_probe.swift -o gc_probe && ./gc_probe
 //
-// It changes nothing on the system.
+// It also asks the framework, for each HID gamepad, whether it claims it
+// (GCController.supportsHIDDevice). It changes nothing on the system.
 
 import AppKit
 import Foundation
 import GameController
+import IOKit.hid
 
 let seconds = Double(CommandLine.arguments.dropFirst().first ?? "") ?? 30
 
@@ -85,6 +87,43 @@ func watchInput(_ c: GCController) {
     }
 }
 
+func hex4(_ v: Int) -> String {
+    let h = String(v, radix: 16, uppercase: true)
+    return String(repeating: "0", count: max(0, 4 - h.count)) + h
+}
+
+// For every HID gamepad/joystick IOKit knows about, ask the framework whether it
+// claims the device. SDL (inside GeForce NOW) and GeForce NOW's own HID code
+// skip devices the framework claims, expecting a GCController to appear. A
+// device that is claimed but never delivered falls through both.
+func checkHIDDevices() {
+    let manager = IOHIDManagerCreate(kCFAllocatorDefault, IOOptionBits(kIOHIDOptionsTypeNone))
+    let matching: [[String: Int]] = [
+        [kIOHIDDeviceUsagePageKey: kHIDPage_GenericDesktop, kIOHIDDeviceUsageKey: kHIDUsage_GD_GamePad],
+        [kIOHIDDeviceUsagePageKey: kHIDPage_GenericDesktop, kIOHIDDeviceUsageKey: kHIDUsage_GD_Joystick],
+        [kIOHIDDeviceUsagePageKey: kHIDPage_GenericDesktop, kIOHIDDeviceUsageKey: kHIDUsage_GD_MultiAxisController],
+    ]
+    IOHIDManagerSetDeviceMatchingMultiple(manager, matching as CFArray)
+    _ = IOHIDManagerOpen(manager, IOOptionBits(kIOHIDOptionsTypeNone))
+    defer { IOHIDManagerClose(manager, IOOptionBits(kIOHIDOptionsTypeNone)) }
+    guard let devices = IOHIDManagerCopyDevices(manager) as? Set<IOHIDDevice>, !devices.isEmpty else {
+        print("HID gamepads seen by IOKit: none\n")
+        return
+    }
+    print("HID gamepads seen by IOKit, and whether GameController claims them:")
+    for device in devices {
+        let name = IOHIDDeviceGetProperty(device, kIOHIDProductKey as CFString) as? String ?? "?"
+        let vid = IOHIDDeviceGetProperty(device, kIOHIDVendorIDKey as CFString) as? Int ?? 0
+        let pid = IOHIDDeviceGetProperty(device, kIOHIDProductIDKey as CFString) as? Int ?? 0
+        var claimed = "n/a (needs macOS 11)"
+        if #available(macOS 11.0, *) {
+            claimed = GCController.supportsHIDDevice(device) ? "YES" : "no"
+        }
+        print("  \(name)  \(hex4(vid)):\(hex4(pid))  supportsHIDDevice: \(claimed)")
+    }
+    print("")
+}
+
 let app = NSApplication.shared
 app.setActivationPolicy(.accessory)
 if #available(macOS 11.3, *) {
@@ -106,6 +145,7 @@ center.addObserver(forName: .GCControllerDidDisconnect, object: nil, queue: .mai
 print("GameController probe on macOS \(ProcessInfo.processInfo.operatingSystemVersionString)")
 print("Listening for \(Int(seconds)) s. Controllers macOS accepts appear below; press buttons to see input.")
 print("Tip: turn the controller off and on while this runs to see the connect event.\n")
+checkHIDDevices()
 
 // Controllers that were already connected show up shortly after launch,
 // either via the notification above or in this list.

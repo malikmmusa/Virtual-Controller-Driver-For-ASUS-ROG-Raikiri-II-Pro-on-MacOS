@@ -19,7 +19,15 @@ Usage:
   python3 sdl_probe.py              # 30 s, with our mapping
   python3 sdl_probe.py --raw        # also print raw joystick indices
   python3 sdl_probe.py --no-mapping # SDL's view without our mapping
+  python3 sdl_probe.py --no-mfi     # stop SDL deferring devices to Apple's framework
   python3 sdl_probe.py --print-env  # print the SDL_GAMECONTROLLERCONFIG value
+
+About --no-mfi: before SDL's macOS IOKit backend opens a HID device, it asks
+Apple's framework `[GCController supportsHIDDevice:]`. If the answer is yes,
+SDL leaves the device to its GameController ("MFi") backend. If Apple claims
+a device but never delivers a GCController for it, SDL ends up with nothing.
+Setting the SDL_JOYSTICK_MFI hint to 0 turns that check (and that backend)
+off.
 """
 
 from __future__ import annotations
@@ -118,6 +126,8 @@ def main(argv=None) -> None:
     ap.add_argument("seconds", nargs="?", type=float, default=30)
     ap.add_argument("--raw", action="store_true", help="also print raw joystick button/axis/hat indices")
     ap.add_argument("--no-mapping", action="store_true", help="don't add our mapping")
+    ap.add_argument("--no-mfi", action="store_true",
+                    help="set SDL_JOYSTICK_MFI=0 so SDL doesn't defer devices to Apple's framework")
     ap.add_argument("--print-env", action="store_true", help="print the SDL_GAMECONTROLLERCONFIG value and exit")
     args = ap.parse_args(argv)
 
@@ -131,6 +141,8 @@ def main(argv=None) -> None:
         sys.exit("PySDL2 not found. Install it with:  pip install pysdl2 pysdl2-dll")
 
     sdl2.SDL_SetHint(b"SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS", b"1")
+    if args.no_mfi:
+        sdl2.SDL_SetHint(b"SDL_JOYSTICK_MFI", b"0")
     if sdl2.SDL_Init(sdl2.SDL_INIT_GAMECONTROLLER) != 0:
         sys.exit(f"SDL_Init failed: {sdl2.SDL_GetError().decode()}")
     v = sdl2.SDL_version()
@@ -139,8 +151,12 @@ def main(argv=None) -> None:
     time.sleep(0.5)   # let device discovery settle
     sdl2.SDL_PumpEvents()
 
+    mfi = (sdl2.SDL_GetHint(b"SDL_JOYSTICK_MFI") or b"(default: on)").decode()
+    print(f"SDL_JOYSTICK_MFI = {mfi}\n")
     print("Without our mapping:")
     describe_joysticks(sdl2)
+    if sdl2.SDL_NumJoysticks() == 0 and not args.no_mfi:
+        print("  (none: try again with --no-mfi; see the docstring for why)")
     if not args.no_mapping:
         for m in mappings:
             if sdl2.SDL_GameControllerAddMapping(m.encode()) < 0:

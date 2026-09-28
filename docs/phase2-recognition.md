@@ -308,6 +308,30 @@ and name each control as you press it. If `launch_gfn_with_mapping.sh` makes
 the controller work in a game, GeForce NOW is solved without any driver.
 The general fix (other apps, and Apple's framework) is still Phases 3–4.
 
+### Experiment 6, first run: SDL sees no joystick at all
+
+`sdl_probe.py` with SDL 2.32.10 reported `SDL sees 0 joystick(s)`, both with
+and without our mapping. So the problem is earlier than the mapping.
+
+The likely cause is a gap between SDL and Apple's framework. Before SDL's
+macOS IOKit backend opens a HID device, it asks
+`[GCController supportsHIDDevice:]` (SDL2 `SDL_mfijoystick.m`,
+`IOS_SupportedHIDDevice`). If the answer is yes, it leaves the device to its
+GameController backend. On macOS 27, gamecontrollerd's new Generic Device
+Manager matches the Raikiri (Finding C), so the framework may answer yes and
+then never deliver a `GCController`. GFN's library has the same pattern:
+`Not handling device %p via HID because GameController will take it.`
+
+Two tests settle it:
+
+- `gc_probe.swift` now prints `supportsHIDDevice` for every HID gamepad.
+  **YES** for the Raikiri confirms the gap.
+- `sdl_probe.py --no-mfi` sets SDL's documented `SDL_JOYSTICK_MFI=0` hint,
+  which turns that check off. If SDL then sees the Raikiri, the mapping can
+  be tested, and `launch_gfn_with_mapping.sh --no-mfi` tries the same in
+  GeForce NOW. GFN's own HID code may still defer the device to Apple's
+  framework; if so, only Phases 3–4 fix GFN.
+
 ## Conclusions
 
 1. **The hypothesis is confirmed, with the exact mechanism.** Apple's

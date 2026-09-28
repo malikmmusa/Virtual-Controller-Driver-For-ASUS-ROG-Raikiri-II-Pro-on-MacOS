@@ -326,6 +326,10 @@ Two tests settle it:
 
 - `gc_probe.swift` now prints `supportsHIDDevice` for every HID gamepad.
   **YES** for the Raikiri confirms the gap.
+  **Result: confirmed.** `RAIKIRI II PRO PC  0B05:1C66  supportsHIDDevice: YES`,
+  followed by `GCController.controllers(): 0 controller(s)`. The framework
+  claims the Raikiri but never delivers it to apps, so code that defers
+  claimed devices (SDL, GFN's HID path) drops it too.
 - `sdl_probe.py --no-mfi` sets SDL's documented `SDL_JOYSTICK_MFI=0` hint,
   which turns that check off. If SDL then sees the Raikiri, the mapping can
   be tested, and `launch_gfn_with_mapping.sh --no-mfi` tries the same in

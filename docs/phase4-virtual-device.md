@@ -117,8 +117,13 @@ This uses Apple's own recovery tools. Have your admin password ready.
 6. Check:
    ```bash
    csrutil status        # "System Integrity Protection status: disabled."
-   nvram boot-args       # boot-args	amfi_get_out_of_my_way=1
+   nvram boot-args       # boot-args	amfi_get_out_of_my_way=1   (stored for next boot)
+   sysctl kern.bootargs  # kern.bootargs: amfi_get_out_of_my_way=1  (active now: the one that matters)
    ```
+   If `kern.bootargs` is empty, AMFI is still enforcing, and the test build
+   is killed with `amfid ... "The file is adhoc signed but contains
+   restricted entitlements"` in the system log. Set the boot argument again
+   (step 5) and restart.
 
 ## 6. Step A: the test
 

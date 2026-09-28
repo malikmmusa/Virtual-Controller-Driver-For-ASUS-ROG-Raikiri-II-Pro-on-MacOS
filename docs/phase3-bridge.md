@@ -53,12 +53,37 @@ Every 10 seconds, and when you press Ctrl-C, the bridge prints three timings:
 | Line | Measured from → to | What it tells you |
 |---|---|---|
 | report interval | one kernel receive → the next | How often the controller sends. Phase 1 saw steps of about 30 ms. It's set by the controller and the Bluetooth link; the bridge can't change it. |
-| kernel → bridge | kernel receive timestamp → our callback starts | Delivery cost from the kernel to user space: scheduling, queue wake-up. Expect tens of microseconds. |
-| bridge processing | our callback starts → sink returns | Our own cost. Expect a few microseconds. |
+| kernel → bridge | kernel receive timestamp → our callback starts | Delivery cost from the kernel to user space: scheduling, queue wake-up. Measured: about 0.13 ms. |
+| bridge processing | our callback starts → sink returns | Our own cost, including the hand-off to the sink. Measured: about 0.025 ms. |
 
 The radio part, from the controller to `bluetoothd`, can't be measured from
 software. Phase 1's report interval sets its scale: a press waits up to
 about 30 ms for the controller's next report.
+
+## Results (first run on the Mac)
+
+macOS 27.0, Raikiri over Bluetooth LE. The bridge built with the Command
+Line Tools on the first try. The `ld: warning: search path ... not found`
+lines come from the CLT lacking Xcode's test frameworks and are harmless.
+
+- **Correctness:** every control printed the expected Xbox name: face
+  buttons, bumpers, L3/R3, all eight D-pad directions, stick directions and
+  LT levels. 99 reports, 0 rejected.
+- **Timing** (99 reports, console sink):
+
+  | | median | p95 | p99 | max |
+  |---|---|---|---|---|
+  | report interval | 30.14 ms | 149.97 ms | 327.83 ms | 1108 ms |
+  | kernel → bridge | 129.6 µs | 260.5 µs | 498.2 µs | 548.3 µs |
+  | bridge processing | 25.2 µs | 39.5 µs | 42.4 µs | 103.5 µs |
+
+  The bridge adds about 0.15 ms, under 1% of the controller's 30 ms report
+  cadence, which remains the dominant delay. Kernel → bridge is higher than
+  a busy-loop estimate would suggest. Reports arrive after ~30 ms of idle,
+  so the core and our thread have to wake up; that's typical on Apple
+  Silicon and still small.
+- **Rumble:** not verified by feel, because vibration is disabled on this
+  controller. Game rumble forwarding is optional for Phase 4.
 
 ## Build and run (on the Mac)
 

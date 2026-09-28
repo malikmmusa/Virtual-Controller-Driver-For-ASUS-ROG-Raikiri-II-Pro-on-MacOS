@@ -184,7 +184,7 @@ another profile.
 To pin down the behavior, run `map` twice:
 
 1. With each M button assigned to a *different* standard button (M1 = A,
-   M2 = B, M3 = X, M4 = Y, M5 = LB, M6 = RB). If the M buttons then match those face buttons, the
+   M2 = B, M3 = X, M4 = Y, M5 = LB, M6 = RB). If the M buttons then match those buttons, the
    controller is copying the assigned button (row 1).
 2. With the M buttons unassigned or disabled, if the controller allows it.
    If they still produce their own bits, they're raw inputs (row 2). If they

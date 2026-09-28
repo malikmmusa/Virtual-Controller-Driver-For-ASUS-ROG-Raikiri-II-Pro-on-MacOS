@@ -72,15 +72,21 @@ def die(msg: str, code: int = 1) -> None:
 
 
 def import_hid():
+    interpreter = f"{sys.executable} (Python {platform.python_version()}, {platform.machine()})"
     try:
         import hid  # type: ignore
-    except ImportError:
-        die("Python module 'hid' not found. Install the Cython binding:\n"
-            "    pip3 install 'hidapi>=0.14'")
+    except ImportError as e:
+        # Show the real reason: "No module named 'hid'" means this interpreter
+        # doesn't have the package; anything else means it failed to load.
+        die(f"could not import the 'hid' module: {e}\n"
+            f"  Python running this script: {interpreter}\n"
+            "  - If that path isn't inside your .venv, run: .venv/bin/python raikiri_probe.py ...\n"
+            "  - Otherwise install into exactly this interpreter: python3 -m pip install 'hidapi>=0.14'")
     if not hasattr(hid, "device"):
         # The unrelated ctypes package `hid` also installs a module named `hid`.
-        die("the installed 'hid' module is not the hidapi Cython binding.\n"
-            "    pip3 uninstall hid && pip3 install 'hidapi>=0.14'")
+        die(f"the 'hid' module at {getattr(hid, '__file__', '?')} is not the hidapi Cython binding.\n"
+            f"  Python running this script: {interpreter}\n"
+            "  Fix: python3 -m pip uninstall hid && python3 -m pip install 'hidapi>=0.14'")
     return hid
 
 

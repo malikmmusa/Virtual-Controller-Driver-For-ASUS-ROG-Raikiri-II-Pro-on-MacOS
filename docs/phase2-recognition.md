@@ -109,7 +109,7 @@ then.
 
 | # | Hypothesis | Status | How we test it |
 |---|---|---|---|
-| H1 | Apple's GameController framework ignores the Raikiri | Very likely | Experiments 1–2 |
+| H1 | Apple's GameController framework ignores the Raikiri | **Confirmed** by Experiment 2 | Experiments 1–2 |
 | H2 | Its allowlist is keyed on identity (vendor/product ID, maybe name), not the report format | Likely: the format already matches Xbox | Experiment 3; Phase 4 |
 | H3 | A virtual device with Xbox Series identity (`045E:0B13`), the Xbox descriptor and a non-virtual transport is accepted as an Xbox controller | Plausible: the DualSense/DualShock 4 projects above | Phase 4, first test |
 | H4 | GeForce NOW's native app accepts whatever GameController accepts as Xbox, or opens it via its HID backend | Unknown: one negative report, one positive (DualSense) | Experiment 4 now; Phase 4 end-to-end |
@@ -188,6 +188,18 @@ log stream --style compact --predicate 'process == "gamecontrollerd"'
 ```
 
 Turn the controller off and on while it runs, then press Ctrl-C.
+
+## Results so far
+
+Recorded on macOS "Version 27.0 (Build 26A428)", with the Raikiri connected
+over Bluetooth.
+
+| Experiment | Result | Meaning |
+|---|---|---|
+| 0: GeForce NOW in Chrome | **Doesn't work.** A Gamepad API tester in the same browser does. | Chrome reports the Raikiri with mapping "n/a" (non-standard). GFN's web client apparently requires `mapping == "standard"`, which Chrome grants from its own list of known vendor/product IDs. It's identity-based again, and not a stopgap. |
+| 1: System Settings | Shows the controller connected as a gamepad | To confirm: Bluetooth's device list, or a Game Controllers page? The Bluetooth type alone doesn't mean the framework accepted it. |
+| 2: `gc_probe.swift` | `GCController.controllers(): 0 controller(s)`, with no connect events | **H1 confirmed:** Apple's GameController framework doesn't accept the Raikiri, although the HID device is present. One caveat: we haven't yet shown the probe detecting a supported controller from a terminal. |
+| 3–5: `inspect_system.py` | Pending | |
 
 ## What the results will mean
 

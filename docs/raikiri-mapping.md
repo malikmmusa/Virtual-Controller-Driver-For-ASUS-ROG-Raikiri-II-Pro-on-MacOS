@@ -117,13 +117,17 @@ control was a D-pad direction. None has a bit of its own. So:
 
 ### Guide button: not tested yet
 
-"Guide" is the round logo button in the center of the controller, the one
-Xbox marks with its logo. It wasn't pressed during the first `map` run
+"Guide" is the center button. On an Xbox controller it carries the Xbox
+logo and is also the power button: a tap means Guide, a long hold means
+power. The Raikiri's only center button is labeled as its power button, so
+the test is to tap it briefly while `monitor` runs. It wasn't pressed during the first `map` run
 (prompt unclear), so it shows as skipped. We expect button 13 if the
 controller follows the Xbox layout. Other outcomes would be a separate
 report ID that the descriptor doesn't declare (older Xbox One S firmware did
 this, and `monitor` and `map` now print such reports), or no report at all
-if the controller keeps the button for itself.
+if the controller keeps the button for itself. If it never sends Guide,
+the Phase 3 daemon can produce Guide from a button combination (for example,
+View + Menu held together).
 
 ## Observations
 

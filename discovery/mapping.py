@@ -154,7 +154,7 @@ DEFAULT_CONTROLS: List[Tuple[str, str]] = [
     ("RT", "RT (right trigger) - pull it ALL the way"),
     ("View", "View / Back / Select (left of the center)"),
     ("Menu", "Menu / Start (right of the center)"),
-    ("Guide", "Guide: the round logo button in the CENTER of the controller (short press only)"),
+    ("Guide", "Guide: on the Raikiri, the center POWER button - quick TAP only, don't hold"),
     ("L3", "L3 (click the left stick)"),
     ("R3", "R3 (click the right stick)"),
     ("DpadUp", "D-pad UP"),

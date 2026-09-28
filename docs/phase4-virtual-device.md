@@ -216,7 +216,13 @@ profile expires, rebuilding in Xcode renews it.
 test build stops launching (macOS kills it), and the controller goes back
 to not working in GeForce NOW until Step B is done. That's expected.
 
-**A ready-made alternative:** [PadLink](https://padlink.nimets.com/) is a
-notarized app with a DriverKit driver that presents unrecognized
-controllers as a virtual DualShock 4, with no security changes. It's not
-tested with the Raikiri or macOS 27, but worth knowing about.
+**Tried: [PadLink](https://padlink.nimets.com/)** (notarized; presents
+unrecognized controllers as a virtual DualShock 4). Right after launch it
+listed the Raikiri as connected, but its driver never created a virtual
+device (no `IOUserHIDDevice`, nothing with Sony's vendor ID 1356 in the
+IORegistry). After a restart it listed the Raikiri under **"Handled by
+macOS — Recognized by macOS"** and left it alone. That's the macOS 27 gap
+from Phase 2: `GCController.supportsHIDDevice` returns YES for the
+Raikiri, but no `GCController` is ever created, so any tool that defers to
+the framework drops it. PadLink would need a "take over anyway" option.
+Until then it doesn't help here.
